@@ -1,12 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthForceHub PM — EMR Project Board</title>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<title>HealthForceHub PM Ã¢â‚¬â€ EMR Project Board</title>
 <style>
   :root {
     --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3350;
@@ -36,26 +33,20 @@
   .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
   .btn-sm{padding:5px 12px;font-size:.78rem;}
   .btn-danger{background:#3d1a1a;color:var(--red);border:1px solid #5c2222;} .btn-danger:hover{background:#5c2222;}
-  /* FIREBASE SETUP & LOADING */
-  #fb-loading{display:none;position:fixed;inset:0;background:rgba(10,12,18,.92);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
-  #fb-loading.show{display:flex;}
-  .fb-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  /* DATA LAYER */
+  #data-loading{display:none;position:fixed;inset:0;background:rgba(10,12,18,.92);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+  #data-loading.show{display:flex;}
+  .data-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .fb-loading-msg{color:var(--muted);font-size:.9rem;}
-  .fb-status{display:flex;align-items:center;gap:5px;font-size:.72rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .15s;}
-  .fb-status:hover{background:var(--surface2);}
-  .fb-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .fb-connected{background:var(--green);}
-  .fb-local{background:var(--yellow);}
-  .fb-error{background:var(--red);}
-  .fb-setup-steps{display:flex;flex-direction:column;gap:10px;background:var(--surface2);border-radius:10px;padding:14px 16px;}
-  .fb-step{display:flex;gap:10px;align-items:flex-start;font-size:.82rem;line-height:1.5;}
-  .fb-step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-  .fb-config-input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.78rem;outline:none;font-family:monospace;width:100%;resize:vertical;min-height:130px;line-height:1.5;}
-  .fb-config-input:focus{border-color:var(--accent);}
-  .fb-mode-banner{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;font-size:.78rem;font-weight:600;margin-bottom:4px;}
-  .fb-mode-local{background:#2a2a1a;color:var(--yellow);border:1px solid #4a4a1a;}
-  .fb-mode-cloud{background:#1a2d1a;color:var(--green);border:1px solid #1a4a1a;}
+  .data-loading-msg{color:var(--muted);font-size:.9rem;}
+  .storage-status{display:flex;align-items:center;gap:5px;font-size:.72rem;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .15s;}
+  .storage-status:hover{background:var(--surface2);}
+  .storage-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--green);}
+  .data-mode-banner{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;font-size:.78rem;font-weight:600;margin-bottom:4px;background:#1a2d1a;color:var(--green);border:1px solid #1a4a1a;}
+  .data-setup-steps{display:flex;flex-direction:column;gap:10px;background:var(--surface2);border-radius:10px;padding:14px 16px;}
+  .data-step{display:flex;gap:10px;align-items:flex-start;font-size:.82rem;line-height:1.5;}
+  .data-step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .data-pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:.78rem;font-family:monospace;line-height:1.6;white-space:pre-wrap;}
   /* PROJECTS VIEW */
   #projects-view{padding:0 24px 32px;display:none;}
   #projects-view.active{display:block;}
@@ -138,6 +129,11 @@
   .card-desc{font-size:.74rem;color:var(--muted);margin-bottom:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .card-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
   .tag{font-size:.66rem;padding:2px 7px;border-radius:12px;font-weight:600;}
+  .agent-chip{font-size:.64rem;padding:1px 6px;border-radius:8px;background:#1a2040;border:1px solid #2e3a6a;color:#8ba4f7;font-weight:700;}
+  .risk-low{background:#1a2a1a;color:#86efac;}
+  .risk-medium{background:#2a2a1a;color:var(--yellow);}
+  .risk-high{background:#2a1a1a;color:#fca5a5;}
+  .risk-critical{background:#3d1010;color:var(--red);}
   .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
   .card-due{font-size:.68rem;color:var(--muted);}
   .progress-bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:7px;overflow:hidden;}
@@ -267,21 +263,27 @@
   .comments-section h4{font-size:.85rem;color:var(--muted);margin-bottom:12px;}
   .comment{background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:.82rem;}
   .comment-meta{font-size:.72rem;color:var(--muted);margin-bottom:4px;}
+  .activity-event{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.18);}
   .comment-input-row{display:flex;gap:8px;margin-top:8px;}
   .comment-input-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.85rem;outline:none;}
   .comment-input-row input:focus{border-color:var(--accent);}
   .badge-count{background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:.72rem;margin-left:6px;}
   .info-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.8rem;color:var(--muted);line-height:1.5;}
+  .mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+  .mini-stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .mini-stat-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+  .mini-stat-value{font-size:1.2rem;font-weight:700;}
   @media(max-width:700px){.form-row,.form-row-3{grid-template-columns:1fr;}header{flex-wrap:wrap;gap:10px;}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header>
-  <div class="logo"><div class="logo-icon">⚕️</div>HealthForceHub PM<span style="font-size:.7rem;color:var(--muted);font-weight:400;margin-left:4px">EMR Build Board</span></div>
+  <div class="logo"><div class="logo-icon">Ã¢Å¡â€¢Ã¯Â¸Â</div>HealthForceHub PM<span style="font-size:.7rem;color:var(--muted);font-weight:400;margin-left:4px">EMR Build Board</span></div>
   <div class="header-actions">
-    <div class="fb-status" onclick="openFbSetup()" id="fb-status-btn" title="Firebase status — click to configure">
-      <div class="fb-status-dot fb-local" id="fb-status-dot"></div>
-      <span id="fb-status-label">Local</span>
+    <div class="storage-status" onclick="openSystemModal()" id="storage-status-btn" title="Data layer overview">
+      <div class="storage-status-dot" id="storage-status-dot"></div>
+      <span id="storage-status-label">Local-first / Supabase-ready</span>
     </div>
     <div class="active-project-pill" onclick="switchTab('projects')" id="active-project-pill">
       <div class="active-project-dot" id="active-project-dot" style="background:var(--accent)"></div>
@@ -292,14 +294,14 @@
   </div>
 </header>
 <div class="tabs">
-  <div class="tab active"  onclick="switchTab('projects')">📁 Projects</div>
-  <div class="tab"         onclick="switchTab('board')">🗂 Kanban Board</div>
-  <div class="tab"         onclick="switchTab('list')">📋 List View</div>
-  <div class="tab"         onclick="switchTab('stats')">📊 Analytics</div>
-  <div class="tab"         onclick="switchTab('team')">👥 Team &amp; Velocity</div>
+  <div class="tab active"  onclick="switchTab('projects')">Ã°Å¸â€œÂ Projects</div>
+  <div class="tab"         onclick="switchTab('board')">Ã°Å¸â€”â€š Kanban Board</div>
+  <div class="tab"         onclick="switchTab('list')">Ã°Å¸â€œâ€¹ List View</div>
+  <div class="tab"         onclick="switchTab('stats')">Ã°Å¸â€œÅ  Analytics</div>
+  <div class="tab"         onclick="switchTab('team')">Ã°Å¸â€˜Â¥ Team &amp; Velocity</div>
 </div>
 <div class="toolbar" id="main-toolbar">
-  <input class="search" type="text" id="search-input" placeholder="🔍  Search tasks, modules, assignees..." oninput="renderAll()">
+  <input class="search" type="text" id="search-input" placeholder="Ã°Å¸â€Â  Search tasks, modules, assignees..." oninput="renderAll()">
   <select class="filter" id="filter-project" onchange="setActiveProject(this.value)">
     <option value="">All Projects</option>
   </select>
@@ -319,7 +321,7 @@
 
 <div id="projects-view">
   <div class="projects-toolbar">
-    <h2>📁 Projects <span id="project-count" class="badge-count">0</span></h2>
+    <h2>Ã°Å¸â€œÂ Projects <span id="project-count" class="badge-count">0</span></h2>
     <button class="btn btn-primary" onclick="openProjectModal()">+ New Project</button>
   </div>
   <div class="projects-grid" id="projects-grid"></div>
@@ -336,22 +338,23 @@
   <div class="stats-grid" id="stats-grid"></div>
   <div id="burndown-section"></div>
   <div class="module-progress"><h3>Module Completion</h3><div id="module-bars"></div></div>
-  <div class="module-progress"><h3>⚡ Sprint Velocity — All Members</h3><div id="analytics-vel"></div></div>
+  <div class="module-progress"><h3>Ã¢Å¡Â¡ Sprint Velocity Ã¢â‚¬â€ All Members</h3><div id="analytics-vel"></div></div>
+  <div class="module-progress"><h3>Agent Ops</h3><div id="agent-ops"></div></div>
 </div>
 <div id="team-view">
   <div class="team-toolbar">
-    <h2>👥 Team Members <span id="team-count" class="badge-count">0</span></h2>
+    <h2>Ã°Å¸â€˜Â¥ Team Members <span id="team-count" class="badge-count">0</span></h2>
     <div class="team-toolbar-right">
-      <button class="btn btn-secondary" onclick="openSprintConfig()">⚙️ Sprint Config</button>
+      <button class="btn btn-secondary" onclick="openSprintConfig()">Ã¢Å¡â„¢Ã¯Â¸Â Sprint Config</button>
       <button class="btn btn-primary"   onclick="openMemberModal()">+ Add Member</button>
     </div>
   </div>
   <div class="velocity-report">
     <div class="vel-report-header">
-      <h3>⚡ Sprint Velocity Report</h3>
+      <h3>Ã¢Å¡Â¡ Sprint Velocity Report</h3>
       <div style="display:flex;align-items:center;gap:10px">
-        <div id="sprint-label-pill" class="sprint-pill">Loading…</div>
-        <button class="export-btn" onclick="exportVelocityPDF()">🖨️ Export PDF</button>
+        <div id="sprint-label-pill" class="sprint-pill">LoadingÃ¢â‚¬Â¦</div>
+        <button class="export-btn" onclick="exportVelocityPDF()">Ã°Å¸â€“Â¨Ã¯Â¸Â Export PDF</button>
       </div>
     </div>
     <div style="overflow-x:auto"><table class="vel-table" id="vel-table"></table></div>
@@ -362,12 +365,12 @@
 <!-- TASK MODAL -->
 <div class="overlay" id="task-overlay" onclick="closeOnOverlay(event)">
   <div class="modal">
-    <div class="modal-header"><div class="modal-title" id="modal-title-text">New Task</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="modal-title-text">New Task</div><button class="modal-close" onclick="closeModal()">Ã¢Å“â€¢</button></div>
     <div class="modal-body">
       <div class="form-group"><label>Task Title *</label><input type="text" id="f-title" placeholder="e.g. Build patient intake form"></div>
       <div class="form-group"><label>Description</label><textarea id="f-desc" placeholder="Describe what needs to be done..."></textarea></div>
       <div class="form-row">
-        <div class="form-group"><label>Project</label><select id="f-project"><option value="">— No Project —</option></select></div>
+        <div class="form-group"><label>Project</label><select id="f-project"><option value="">Ã¢â‚¬â€ No Project Ã¢â‚¬â€</option></select></div>
         <div class="form-group"><label>Module *</label>
           <select id="f-module"><option>Patient Registration</option><option>Appointments</option><option>Clinical Notes</option><option>Prescriptions</option><option>Billing &amp; Claims</option><option>Lab Results</option><option>Reporting</option><option>Admin &amp; Settings</option><option>Security &amp; Auth</option><option>Integrations</option></select>
         </div>
@@ -380,34 +383,48 @@
           <select id="f-priority"><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>Story Points ⚡</label>
-          <select id="f-sp"><option value="0">— Unpointed —</option><option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option><option value="5">5 pts</option><option value="8">8 pts</option><option value="13">13 pts</option></select>
+      <div class="form-row-3">
+        <div class="form-group"><label>Story Points Ã¢Å¡Â¡</label>
+          <select id="f-sp"><option value="0">Ã¢â‚¬â€ Unpointed Ã¢â‚¬â€</option><option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option><option value="5">5 pts</option><option value="8">8 pts</option><option value="13">13 pts</option></select>
         </div>
         <div class="form-group"><label>Sprint</label><select id="f-sprint"><option value="">No Sprint</option></select></div>
+        <div class="form-group"><label>Risk Level</label>
+          <select id="f-risk"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="critical">Critical</option></select>
+        </div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>Assignee</label><select id="f-assignee"><option value="">— Unassigned —</option></select></div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Assignee</label><select id="f-assignee"><option value="">Ã¢â‚¬â€ Unassigned Ã¢â‚¬â€</option></select></div>
+        <div class="form-group"><label>Reviewer</label><select id="f-reviewer"><option value="">Ã¢â‚¬â€ None Ã¢â‚¬â€</option></select></div>
         <div class="form-group"><label>Due Date</label><input type="date" id="f-due"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>Progress (0–100%)</label><input type="number" id="f-progress" min="0" max="100" value="0"></div>
-        <div></div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Progress (0Ã¢â‚¬â€œ100%)</label><input type="number" id="f-progress" min="0" max="100" value="0"></div>
+        <div class="form-group"><label>Agent Status</label>
+          <select id="f-agent-status"><option value="not_requested">Not Requested</option><option value="queued">Queued</option><option value="running">Running</option><option value="needs_human">Needs Human</option><option value="completed">Completed</option><option value="failed">Failed</option></select>
+        </div>
+        <div class="form-group"><label>Environment</label><input type="text" id="f-environment" placeholder="e.g. local, staging, prod-sim"></div>
       </div>
-      <div class="form-group"><label>Notes / Acceptance Criteria</label><textarea id="f-notes" placeholder="What defines 'done' for this task?"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Repo URL</label><input type="text" id="f-repo" placeholder="https://github.com/org/repo"></div>
+        <div class="form-group"><label>PR URL</label><input type="text" id="f-pr" placeholder="https://github.com/org/repo/pull/123"></div>
+      </div>
+      <div class="form-group"><label>Next Action</label><textarea id="f-next-action" placeholder="What should happen next, specifically?"></textarea></div>
+      <div class="form-group"><label>Blocked Reason</label><textarea id="f-blocked-reason" placeholder="If blocked, what is waiting on what?"></textarea></div>
+      <div class="form-group"><label>Definition Of Done</label><textarea id="f-dod" placeholder="Concrete checks for completion"></textarea></div>
+      <div class="form-group"><label>Notes / Context</label><textarea id="f-notes" placeholder="Architecture notes, links, constraints, decisions..."></textarea></div>
       <!-- DEPENDENCIES -->
       <div class="dep-section" id="dep-section" style="display:none">
-        <h4>🔗 Dependencies</h4>
+        <h4>Ã°Å¸â€â€” Dependencies</h4>
         <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px">This task is <strong>blocked by</strong>:</div>
         <div class="dep-list" id="dep-list"></div>
         <div class="dep-add-row">
-          <select id="dep-select"><option value="">— Add blocker task —</option></select>
+          <select id="dep-select"><option value="">Ã¢â‚¬â€ Add blocker task Ã¢â‚¬â€</option></select>
           <button class="btn btn-secondary btn-sm" onclick="addBlocker()">+ Add</button>
         </div>
         <div style="margin-top:12px;font-size:.75rem;color:var(--muted)" id="blocks-label"></div>
       </div>
       <div class="comments-section" id="comments-section" style="display:none">
-        <h4>💬 Activity &amp; Comments</h4>
+        <h4>Ã°Å¸â€™Â¬ Activity &amp; Comments</h4>
         <div id="comments-list"></div>
         <div class="comment-input-row">
           <input type="text" id="comment-input" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')addComment()">
@@ -416,9 +433,10 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-danger btn-sm" id="delete-btn" onclick="deleteTask()" style="display:none">🗑 Delete</button>
+      <button class="btn btn-secondary btn-sm" id="queue-agent-btn" onclick="queueAgentRun()" style="display:none">Queue Agent Run</button>
+      <button class="btn btn-danger btn-sm" id="delete-btn" onclick="deleteTask()" style="display:none">Ã°Å¸â€”â€˜ Delete</button>
       <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveTask()">💾 Save Task</button>
+      <button class="btn btn-primary" onclick="saveTask()">Ã°Å¸â€™Â¾ Save Task</button>
     </div>
   </div>
 </div>
@@ -426,7 +444,7 @@
 <!-- MEMBER MODAL -->
 <div class="overlay" id="member-overlay" onclick="closeOnOverlay(event)">
   <div class="modal" style="width:520px">
-    <div class="modal-header"><div class="modal-title" id="member-modal-title">➕ Add Team Member</div><button class="modal-close" onclick="closeMemberModal()">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="member-modal-title">Ã¢Å¾â€¢ Add Team Member</div><button class="modal-close" onclick="closeMemberModal()">Ã¢Å“â€¢</button></div>
     <div class="modal-body">
       <div class="form-group"><label>Avatar Color</label>
         <div style="display:flex;align-items:center;gap:12px"><div class="avatar-preview" id="avatar-preview" style="background:#4f8ef7">?</div><div class="avatar-picker" id="avatar-picker"></div></div>
@@ -441,19 +459,19 @@
       </div>
       <div class="form-row">
         <div class="form-group"><label>Department</label>
-          <select id="m-dept"><option value="">— Select —</option><option>Engineering</option><option>Design</option><option>QA / Testing</option><option>Product</option><option>DevOps</option><option>Management</option><option>Integrations</option><option>Support</option></select>
+          <select id="m-dept"><option value="">Ã¢â‚¬â€ Select Ã¢â‚¬â€</option><option>Engineering</option><option>Design</option><option>QA / Testing</option><option>Product</option><option>DevOps</option><option>Management</option><option>Integrations</option><option>Support</option></select>
         </div>
         <div class="form-group"><label>Availability</label>
-          <select id="m-status"><option value="active">🟢 Active</option><option value="away">🟡 Away</option><option value="offline">⚫ Offline</option></select>
+          <select id="m-status"><option value="active">Ã°Å¸Å¸Â¢ Active</option><option value="away">Ã°Å¸Å¸Â¡ Away</option><option value="offline">Ã¢Å¡Â« Offline</option></select>
         </div>
       </div>
       <div class="form-group"><label>Skills (comma-separated)</label><input type="text" id="m-skills" placeholder="e.g. React, Node.js, PostgreSQL, Stripe API"></div>
       <div class="form-group"><label>Notes</label><textarea id="m-notes" placeholder="Anything relevant about this team member..."></textarea></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-danger btn-sm" id="member-delete-btn" onclick="deleteMember()" style="display:none">🗑 Remove</button>
+      <button class="btn btn-danger btn-sm" id="member-delete-btn" onclick="deleteMember()" style="display:none">Ã°Å¸â€”â€˜ Remove</button>
       <button class="btn btn-secondary" onclick="closeMemberModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveMember()">💾 Save Member</button>
+      <button class="btn btn-primary" onclick="saveMember()">Ã°Å¸â€™Â¾ Save Member</button>
     </div>
   </div>
 </div>
@@ -461,9 +479,9 @@
 <!-- SPRINT CONFIG MODAL -->
 <div class="overlay" id="sprint-overlay" onclick="closeOnOverlay(event)">
   <div class="modal" style="width:540px">
-    <div class="modal-header"><div class="modal-title">⚙️ Sprint Configuration</div><button class="modal-close" onclick="document.getElementById('sprint-overlay').classList.remove('open')">✕</button></div>
+    <div class="modal-header"><div class="modal-title">Ã¢Å¡â„¢Ã¯Â¸Â Sprint Configuration</div><button class="modal-close" onclick="document.getElementById('sprint-overlay').classList.remove('open')">Ã¢Å“â€¢</button></div>
     <div class="modal-body">
-      <div class="info-box">Sprints are auto-generated from the project start date in fixed intervals. Changing the start date regenerates all sprint labels — existing task sprint assignments are preserved.</div>
+      <div class="info-box">Sprints are auto-generated from the project start date in fixed intervals. Changing the start date regenerates all sprint labels Ã¢â‚¬â€ existing task sprint assignments are preserved.</div>
       <div class="form-row">
         <div class="form-group"><label>Project Start Date</label><input type="date" id="sc-start" oninput="renderSprintPreview()"></div>
         <div class="form-group"><label>Sprint Length</label>
@@ -480,13 +498,13 @@
       </div>
       <div>
         <div style="font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Historical Velocity Override (past sprints)</div>
-        <div class="info-box" style="margin-bottom:8px">Enter baseline velocity for sprints before this system was set up. One member per line.<br>Format: <code style="color:var(--accent)">Alex Chen: 8, 13, 10, 15</code> — values are assigned to the earliest past sprints in order.</div>
+        <div class="info-box" style="margin-bottom:8px">Enter baseline velocity for sprints before this system was set up. One member per line.<br>Format: <code style="color:var(--accent)">Alex Chen: 8, 13, 10, 15</code> Ã¢â‚¬â€ values are assigned to the earliest past sprints in order.</div>
         <textarea id="sc-history" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.82rem;outline:none;font-family:monospace;width:100%;resize:vertical;min-height:90px;line-height:1.7;" placeholder="Alex Chen: 8, 13, 10, 15&#10;Maria Santos: 5, 8, 8, 10&#10;James Wright: 3, 5, 8, 8"></textarea>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="document.getElementById('sprint-overlay').classList.remove('open')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveSprintConfig()">💾 Save Config</button>
+      <button class="btn btn-primary" onclick="saveSprintConfig()">Ã°Å¸â€™Â¾ Save Config</button>
     </div>
   </div>
 </div>
@@ -494,24 +512,24 @@
 <!-- PROJECT MODAL -->
 <div class="overlay" id="project-overlay" onclick="closeOnOverlay(event)">
   <div class="modal" style="width:520px">
-    <div class="modal-header"><div class="modal-title" id="project-modal-title">➕ New Project</div><button class="modal-close" onclick="closeProjectModal()">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="project-modal-title">Ã¢Å¾â€¢ New Project</div><button class="modal-close" onclick="closeProjectModal()">Ã¢Å“â€¢</button></div>
     <div class="modal-body">
       <div class="form-group"><label>Project Name *</label><input type="text" id="p-name" placeholder="e.g. EMR Booking Widget Integration"></div>
       <div class="form-group"><label>Description</label><textarea id="p-desc" placeholder="What is this project about? Goals, scope, context..."></textarea></div>
       <div class="form-row">
         <div class="form-group"><label>Status</label>
           <select id="p-status">
-            <option value="active">🟢 Active</option>
-            <option value="hold">🟡 On Hold</option>
-            <option value="completed">✅ Completed</option>
-            <option value="archived">⬛ Archived</option>
+            <option value="active">Ã°Å¸Å¸Â¢ Active</option>
+            <option value="hold">Ã°Å¸Å¸Â¡ On Hold</option>
+            <option value="completed">Ã¢Å“â€¦ Completed</option>
+            <option value="archived">Ã¢Â¬â€º Archived</option>
           </select>
         </div>
         <div class="form-group"><label>Icon</label>
           <select id="p-icon">
-            <option>🏗️</option><option>⚕️</option><option>💊</option><option>🔗</option>
-            <option>💳</option><option>📋</option><option>🔐</option><option>📊</option>
-            <option>🎨</option><option>🚀</option><option>⚡</option><option>🛠️</option>
+            <option>Ã°Å¸Ââ€”Ã¯Â¸Â</option><option>Ã¢Å¡â€¢Ã¯Â¸Â</option><option>Ã°Å¸â€™Å </option><option>Ã°Å¸â€â€”</option>
+            <option>Ã°Å¸â€™Â³</option><option>Ã°Å¸â€œâ€¹</option><option>Ã°Å¸â€Â</option><option>Ã°Å¸â€œÅ </option>
+            <option>Ã°Å¸Å½Â¨</option><option>Ã°Å¸Å¡â‚¬</option><option>Ã¢Å¡Â¡</option><option>Ã°Å¸â€ºÂ Ã¯Â¸Â</option>
           </select>
         </div>
       </div>
@@ -522,13 +540,13 @@
         <div class="form-group"><label>Start Date</label><input type="date" id="p-start"></div>
         <div class="form-group"><label>Target End Date</label><input type="date" id="p-end"></div>
       </div>
-      <div class="form-group"><label>Owner</label><select id="p-owner"><option value="">— Unassigned —</option></select></div>
+      <div class="form-group"><label>Owner</label><select id="p-owner"><option value="">Ã¢â‚¬â€ Unassigned Ã¢â‚¬â€</option></select></div>
       <div class="form-group"><label>Notes</label><textarea id="p-notes" placeholder="Links, resources, or any additional context..."></textarea></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-danger btn-sm" id="project-delete-btn" onclick="deleteProject()" style="display:none">🗑 Delete</button>
+      <button class="btn btn-danger btn-sm" id="project-delete-btn" onclick="deleteProject()" style="display:none">Ã°Å¸â€”â€˜ Delete</button>
       <button class="btn btn-secondary" onclick="closeProjectModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveProject()">💾 Save Project</button>
+      <button class="btn btn-primary" onclick="saveProject()">Ã°Å¸â€™Â¾ Save Project</button>
     </div>
   </div>
 </div>
@@ -536,32 +554,45 @@
 <!-- USER MODAL -->
 <div class="overlay" id="user-overlay" onclick="closeOnOverlay(event)">
   <div class="modal" style="width:360px">
-    <div class="modal-header"><div class="modal-title">Switch Developer</div><button class="modal-close" onclick="document.getElementById('user-overlay').classList.remove('open')">✕</button></div>
+    <div class="modal-header"><div class="modal-title">Switch Developer</div><button class="modal-close" onclick="document.getElementById('user-overlay').classList.remove('open')">Ã¢Å“â€¢</button></div>
     <div class="modal-body"><div class="form-group"><label>Your Name</label><input type="text" id="user-input" placeholder="Enter your name"></div></div>
     <div class="modal-footer"><button class="btn btn-primary" onclick="setUser()">Set Name</button></div>
   </div>
 </div>
 
 <script>
-/* ── CONSTANTS ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ CONSTANTS Ã¢â€â‚¬Ã¢â€â‚¬ */
 const STATUSES  = ['backlog','feature','ready','inprogress','testing','done'];
 const STAT_LBL  = {backlog:'Backlog',feature:'Features Requested',ready:'Ready for Dev',inprogress:'In Progress',testing:'Testing',done:'Done'};
 const MODULES   = ['Patient Registration','Appointments','Clinical Notes','Prescriptions','Billing & Claims','Lab Results','Reporting','Admin & Settings','Security & Auth','Integrations'];
 const MOD_CLR   = ['#4f8ef7','#22c97a','#f7c948','#f76464','#c084fc','#22d3ee','#fb923c','#7c6af7','#e879f9','#34d399'];
 const AVT_CLR   = ['#4f8ef7','#22c97a','#f7c948','#f76464','#c084fc','#22d3ee','#fb923c','#7c6af7','#e879f9','#34d399','#f472b6','#a78bfa'];
 
-let tasks=[], members=[], projects=[];
-let sprintCfg = JSON.parse(localStorage.getItem('emr-scfg') || 'null') || {projectStart:'2026-01-05',sprintLength:14};
-let histRaw   = localStorage.getItem('emr-hist') || '';
+const STORAGE_KEYS = {
+  tasks:'emr-tasks',
+  members:'emr-members',
+  projects:'emr-projects',
+  sprintCfg:'emr-scfg',
+  hist:'emr-hist',
+  user:'emr-user',
+  events:'emr-events',
+  agentRuns:'emr-agent-runs'
+};
+
+let tasks=[], members=[], projects=[], events=[], agentRuns=[];
+let sprintCfg = JSON.parse(localStorage.getItem(STORAGE_KEYS.sprintCfg) || 'null') || {projectStart:'2026-01-05',sprintLength:14};
+let histRaw   = localStorage.getItem(STORAGE_KEYS.hist) || '';
 let editId=null, editMemberId=null, editProjectId=null, selColor=AVT_CLR[0], selProjectColor='#4f8ef7';
 let activeProjectId='';
-let currentUser = localStorage.getItem('emr-user') || 'Alex';
+let currentUser = localStorage.getItem(STORAGE_KEYS.user) || 'Alex';
+const systemMode='local-first';
 
-// Firebase state
-let db=null, fbApp=null, fbMode='local'; // 'local' | 'cloud'
-let _listenersActive=false;
+/* ── SUPABASE ── */
+const SB_URL='https://kzyjrooaehubmkrfvpob.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eWpyb29hZWh1Ym1rcmZ2cG9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Nzg2MzUsImV4cCI6MjA5NTA1NDYzNX0.IqJTSaUWSfybX8kd2UbPYfXrJsbsN_I1YPm8EPyzywo';
+let sb=null, sbMode='local', _channelActive=false;
 
-/* ── SPRINT ENGINE ── */
+/*Ã¢â€â‚¬Ã¢â€â‚¬ SPRINT ENGINE Ã¢â€â‚¬Ã¢â€â‚¬ */
 function genSprints(extraFuture=1){
   const start = new Date(sprintCfg.projectStart+'T00:00:00');
   const len   = parseInt(sprintCfg.sprintLength)||14;
@@ -580,7 +611,7 @@ function today(){return dfmt(new Date());}
 function spStatus(s){const t=today();if(s.endDate<t)return'past';if(s.startDate>t)return'future';return'current';}
 function curSprint(sps){const t=today();return sps.find(s=>s.startDate<=t&&s.endDate>=t);}
 
-/* ── VELOCITY ENGINE ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ VELOCITY ENGINE Ã¢â€â‚¬Ã¢â€â‚¬ */
 function parseHist(raw){
   const r={};
   (raw||'').split('\n').forEach(line=>{
@@ -621,14 +652,14 @@ function velAvg(data){
 
 function velTrend(data){
   const v=data.filter(d=>d.status!=='future').map(d=>d.pts);
-  if(v.length<2)return{icon:'—',cls:'trend-eq'};
+  if(v.length<2)return{icon:'Ã¢â‚¬â€',cls:'trend-eq'};
   const diff=v[v.length-1]-v[v.length-2];
-  if(diff>0)return{icon:`↑ +${diff}`,cls:'trend-up'};
-  if(diff<0)return{icon:`↓ ${diff}`,cls:'trend-dn'};
-  return{icon:'→ 0',cls:'trend-eq'};
+  if(diff>0)return{icon:`Ã¢â€ â€˜ +${diff}`,cls:'trend-up'};
+  if(diff<0)return{icon:`Ã¢â€ â€œ ${diff}`,cls:'trend-dn'};
+  return{icon:'Ã¢â€ â€™ 0',cls:'trend-eq'};
 }
 
-/* ── SPARKLINE SVG ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ SPARKLINE SVG Ã¢â€â‚¬Ã¢â€â‚¬ */
 function sparkline(data,color){
   if(!data.length)return'<span style="color:var(--muted);font-size:.75rem">No data</span>';
   const W=220,H=40,gap=3;
@@ -646,7 +677,7 @@ function sparkline(data,color){
   return `<svg width="${W}" height="${H+18}" viewBox="0 0 ${W} ${H+18}" overflow="visible" style="display:block">${bars}</svg>`;
 }
 
-/* ── SEEDS ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ SEEDS Ã¢â€â‚¬Ã¢â€â‚¬ */
 function seedMembers(){
   members=[
     {id:uid(),name:'Alex Chen',   role:'Lead Developer',    email:'alex@healthforcehub.com',  phone:'',dept:'Engineering',  status:'active',skills:'React, Node.js, PostgreSQL, Stripe API',notes:'Project lead. Full-stack. Owns backend API.',color:'#4f8ef7'},
@@ -655,15 +686,14 @@ function seedMembers(){
   ];
   saveMembers();
   histRaw='Alex Chen: 8, 13, 10, 15\nMaria Santos: 5, 8, 8, 10\nJames Wright: 3, 5, 8, 8';
-  if(db) db.collection('meta').doc('sprintHistory').set({histRaw}).catch(console.error);
-  else localStorage.setItem('emr-hist',histRaw);
+  localStorage.setItem(STORAGE_KEYS.hist,histRaw);
 }
 
 function seedData(){
   const sps=genSprints(); const cs=curSprint(sps); const cid=cs?cs.id:'';
   const prev=sps.find(s=>s.number===(cs?cs.number-1:0)); const pid=prev?prev.id:'';
   tasks=[
-    {id:uid(),title:'Side-by-side provider column view',desc:"Display multiple providers as parallel columns on the calendar. Critical for multi-provider med spa workflows.",module:'Appointments',status:'backlog',priority:'High',assignee:'Alex Chen',due:'2026-04-15',progress:0,storyPoints:8,sprintId:cid,notes:'Must support 1–8 columns.',comments:[{user:'System',text:'Identified during UX audit 3/10/26.',date:'2026-03-10'}]},
+    {id:uid(),title:'Side-by-side provider column view',desc:"Display multiple providers as parallel columns on the calendar. Critical for multi-provider med spa workflows.",module:'Appointments',status:'backlog',priority:'High',assignee:'Alex Chen',due:'2026-04-15',progress:0,storyPoints:8,sprintId:cid,notes:'Must support 1Ã¢â‚¬â€œ8 columns.',comments:[{user:'System',text:'Identified during UX audit 3/10/26.',date:'2026-03-10'}]},
     {id:uid(),title:'Click-to-create appointment on empty slot',desc:'Allow staff to click any empty calendar cell to open a new appointment form pre-filled with that date/time.',module:'Appointments',status:'backlog',priority:'High',assignee:'Alex Chen',due:'2026-04-10',progress:0,storyPoints:5,sprintId:cid,notes:'Standard in Boulevard. Major workflow speed improvement.',comments:[]},
     {id:uid(),title:'Drag-to-reschedule appointments',desc:'Enable drag-and-drop rescheduling directly on the calendar grid.',module:'Appointments',status:'inprogress',priority:'High',assignee:'Alex Chen',due:'2026-04-20',progress:25,storyPoints:8,sprintId:cid,notes:'Confirm dialog required. Auto-notify patient via SMS on drop.',comments:[]},
     {id:uid(),title:'Hover mini-card for appointments',desc:'Show a compact patient summary card when hovering over a calendar block.',module:'Appointments',status:'backlog',priority:'Medium',assignee:'Maria Santos',due:'2026-05-01',progress:0,storyPoints:3,sprintId:cid,notes:'Should show membership badge if patient is an active subscriber.',comments:[]},
@@ -672,24 +702,24 @@ function seedData(){
     {id:uid(),title:"Today's appointments & tasks widget",desc:"Add a 'Today at a Glance' section to the dashboard showing today's appointment count.",module:'Reporting',status:'backlog',priority:'High',assignee:'Maria Santos',due:'2026-04-10',progress:0,storyPoints:3,sprintId:cid,notes:'Should be the first thing staff see on login.',comments:[]},
     {id:uid(),title:'Cancellation & no-show rate KPI',desc:'Add cancellation rate and no-show rate as dashboard KPI cards with % change vs prior period.',module:'Reporting',status:'backlog',priority:'Medium',assignee:'',due:'2026-04-25',progress:0,storyPoints:3,sprintId:'',notes:'Critical for measuring front desk performance.',comments:[]},
     {id:uid(),title:'Set up Node.js/Express middleware server',desc:'Build the backend middleware server between the booking widget and all third-party services.',module:'Integrations',status:'backlog',priority:'Critical',assignee:'Alex Chen',due:'2026-03-17',progress:0,storyPoints:8,sprintId:cid,notes:'Never expose API secret keys in the browser.',comments:[{user:'System',text:'Phase 1 of booking widget integration.',date:'2026-03-10'}]},
-    {id:uid(),title:'Obtain HealthForce Hub API credentials',desc:'Contact HealthForce Hub support to obtain API key, base URL, and full API documentation.',module:'Integrations',status:'inprogress',priority:'Critical',assignee:'Alex Chen',due:'2026-03-12',progress:10,storyPoints:2,sprintId:cid,notes:'Ask HFH for: providers, services, availability, create appointment, patient lookup endpoints.',comments:[{user:'System',text:'FIRST STEP — must have API docs before any backend build.',date:'2026-03-10'}]},
+    {id:uid(),title:'Obtain HealthForce Hub API credentials',desc:'Contact HealthForce Hub support to obtain API key, base URL, and full API documentation.',module:'Integrations',status:'inprogress',priority:'Critical',assignee:'Alex Chen',due:'2026-03-12',progress:10,storyPoints:2,sprintId:cid,notes:'Ask HFH for: providers, services, availability, create appointment, patient lookup endpoints.',comments:[{user:'System',text:'FIRST STEP Ã¢â‚¬â€ must have API docs before any backend build.',date:'2026-03-10'}]},
     {id:uid(),title:'Build GET /api/providers endpoint',desc:'Returns all active providers for a given clinic_id.',module:'Integrations',status:'backlog',priority:'Critical',assignee:'Alex Chen',due:'2026-03-19',progress:0,storyPoints:3,sprintId:cid,notes:'See handoff doc Section 4 for full schema.',comments:[]},
-    {id:uid(),title:'Build GET /api/availability endpoint',desc:'Returns real open time slots from HFH calendar for a specific provider and date.',module:'Integrations',status:'backlog',priority:'Critical',assignee:'Alex Chen',due:'2026-03-20',progress:0,storyPoints:13,sprintId:cid,notes:'Critical sync point — if this is wrong, double-bookings will occur.',comments:[]},
+    {id:uid(),title:'Build GET /api/availability endpoint',desc:'Returns real open time slots from HFH calendar for a specific provider and date.',module:'Integrations',status:'backlog',priority:'Critical',assignee:'Alex Chen',due:'2026-03-20',progress:0,storyPoints:13,sprintId:cid,notes:'Critical sync point Ã¢â‚¬â€ if this is wrong, double-bookings will occur.',comments:[]},
     {id:uid(),title:'Build POST /api/appointments endpoint',desc:'Creates a confirmed appointment in the HFH calendar after Stripe payment is confirmed.',module:'Integrations',status:'backlog',priority:'Critical',assignee:'Alex Chen',due:'2026-03-20',progress:0,storyPoints:8,sprintId:cid,notes:'Only called from Stripe webhook AFTER payment success.',comments:[]},
     {id:uid(),title:'Build Stripe webhook handler',desc:'Listen for checkout.session.completed. On success: parse metadata, POST to HFH, trigger Twilio SMS.',module:'Billing & Claims',status:'backlog',priority:'Critical',assignee:'Alex Chen',due:'2026-03-27',progress:0,storyPoints:8,sprintId:cid,notes:'Most critical piece of the entire integration.',comments:[]},
-    {id:uid(),title:'Complete Twilio A2P 10DLC SMS registration',desc:'Required by US carriers before sending business SMS at scale.',module:'Integrations',status:'inprogress',priority:'Critical',assignee:'James Wright',due:'2026-03-17',progress:30,storyPoints:3,sprintId:cid,notes:'START IMMEDIATELY — carrier approval can take up to 7 days.',comments:[{user:'System',text:'URGENT: Begin A2P registration on Day 1.',date:'2026-03-10'}]},
-    {id:uid(),title:'Full end-to-end QA — booking widget',desc:'Run minimum 5 complete test bookings through the entire flow.',module:'Integrations',status:'backlog',priority:'Critical',assignee:'James Wright',due:'2026-04-04',progress:0,storyPoints:8,sprintId:cid,notes:'Use Stripe test card 4242 4242 4242 4242.',comments:[{user:'System',text:'Do not launch to public until every QA checklist item is checked off.',date:'2026-03-10'}]},
-    {id:uid(),title:'Resolve Form Builder developer license warning',desc:"Survey Builder shows an orange banner: 'To use our library, a developer license is required.'",module:'Security & Auth',status:'inprogress',priority:'Critical',assignee:'James Wright',due:'2026-03-25',progress:10,storyPoints:5,sprintId:cid,notes:'BLOCKING: No custom forms can be built until resolved.',comments:[{user:'System',text:'CRITICAL audit finding 3/10/26 — production blocker.',date:'2026-03-10'}]},
+    {id:uid(),title:'Complete Twilio A2P 10DLC SMS registration',desc:'Required by US carriers before sending business SMS at scale.',module:'Integrations',status:'inprogress',priority:'Critical',assignee:'James Wright',due:'2026-03-17',progress:30,storyPoints:3,sprintId:cid,notes:'START IMMEDIATELY Ã¢â‚¬â€ carrier approval can take up to 7 days.',comments:[{user:'System',text:'URGENT: Begin A2P registration on Day 1.',date:'2026-03-10'}]},
+    {id:uid(),title:'Full end-to-end QA Ã¢â‚¬â€ booking widget',desc:'Run minimum 5 complete test bookings through the entire flow.',module:'Integrations',status:'backlog',priority:'Critical',assignee:'James Wright',due:'2026-04-04',progress:0,storyPoints:8,sprintId:cid,notes:'Use Stripe test card 4242 4242 4242 4242.',comments:[{user:'System',text:'Do not launch to public until every QA checklist item is checked off.',date:'2026-03-10'}]},
+    {id:uid(),title:'Resolve Form Builder developer license warning',desc:"Survey Builder shows an orange banner: 'To use our library, a developer license is required.'",module:'Security & Auth',status:'inprogress',priority:'Critical',assignee:'James Wright',due:'2026-03-25',progress:10,storyPoints:5,sprintId:cid,notes:'BLOCKING: No custom forms can be built until resolved.',comments:[{user:'System',text:'CRITICAL audit finding 3/10/26 Ã¢â‚¬â€ production blocker.',date:'2026-03-10'}]},
     {id:uid(),title:'Auto-assign forms by appointment type',desc:'When a patient books a specific appointment type, automatically queue the relevant intake forms.',module:'Patient Registration',status:'backlog',priority:'High',assignee:'Maria Santos',due:'2026-05-01',progress:0,storyPoints:5,sprintId:'',notes:'Audit: 24 form types exist but no auto-assignment logic observed.',comments:[]},
     {id:uid(),title:'Patient photo consent workflow',desc:'Require explicit digital consent before photos are taken/uploaded.',module:'Patient Registration',status:'backlog',priority:'Critical',assignee:'Maria Santos',due:'2026-04-25',progress:0,storyPoints:5,sprintId:cid,notes:'HIPAA and state law requirement. Must be documented and timestamped.',comments:[]},
-    {id:uid(),title:'UI redesign — premium light mode for med spa market',desc:'The current design is functional but not premium enough for the med spa aesthetic market.',module:'Admin & Settings',status:'backlog',priority:'High',assignee:'Maria Santos',due:'2026-06-01',progress:0,storyPoints:13,sprintId:'',notes:'Med spa clients respond to premium aesthetics.',comments:[]},
+    {id:uid(),title:'UI redesign Ã¢â‚¬â€ premium light mode for med spa market',desc:'The current design is functional but not premium enough for the med spa aesthetic market.',module:'Admin & Settings',status:'backlog',priority:'High',assignee:'Maria Santos',due:'2026-06-01',progress:0,storyPoints:13,sprintId:'',notes:'Med spa clients respond to premium aesthetics.',comments:[]},
     {id:uid(),title:'Mobile/tablet responsive audit & fixes',desc:'Audit all screens for tablet and mobile responsiveness. Front desk staff commonly use iPads.',module:'Admin & Settings',status:'backlog',priority:'High',assignee:'Maria Santos',due:'2026-05-20',progress:0,storyPoints:8,sprintId:'',notes:'Test on iPad (1024px), iPad Mini (768px), and iPhone (390px).',comments:[]},
     {id:uid(),title:'Create Stripe account for Prosper Health & Aesthetics',desc:'Set up Stripe account. Obtain publishable and secret keys. Configure webhook endpoint.',module:'Billing & Claims',status:'backlog',priority:'Critical',assignee:'Alex Chen',due:'2026-03-14',progress:0,storyPoints:2,sprintId:cid,notes:'Use pk_test_ until full QA is complete.',comments:[]},
     {id:uid(),title:'Online self-booking widget (embeddable)',desc:"Build a white-label booking widget that clinics can embed on their own website.",module:'Appointments',status:'backlog',priority:'Critical',assignee:'Alex Chen',due:'2026-05-01',progress:0,storyPoints:13,sprintId:'',notes:"Boulevard's #1 revenue driver. Must support deposit collection at booking.",comments:[]},
     {id:uid(),title:'Failed renewal handling & dunning',desc:'Auto-retry failed membership payments on a configurable schedule. Notify patient via SMS/email.',module:'Billing & Claims',status:'backlog',priority:'Critical',assignee:'',due:'2026-04-30',progress:0,storyPoints:8,sprintId:'',notes:'Without this, recurring revenue leaks silently.',comments:[]},
     {id:uid(),title:'Patient medication & allergy alert on appointment open',desc:'Display a banner if the patient has flagged allergies or contraindications relevant to the scheduled service.',module:'Clinical Notes',status:'backlog',priority:'Critical',assignee:'',due:'2026-05-01',progress:0,storyPoints:5,sprintId:'',notes:'Patient safety feature. Required for GLP-1, injectables, and laser services.',comments:[]},
     {id:uid(),title:'Side-by-side before/after photo comparison viewer',desc:"Build a split-screen slider view for before/after photos within a patient's treatment timeline.",module:'Clinical Notes',status:'backlog',priority:'High',assignee:'Maria Santos',due:'2026-05-10',progress:0,storyPoints:8,sprintId:'',notes:'Must support drag slider and download/print for patient consultations.',comments:[]},
-    // Finalized tasks from previous sprint — these drive real velocity for Sprint 4
+    // Finalized tasks from previous sprint Ã¢â‚¬â€ these drive real velocity for Sprint 4
     {id:uid(),title:'[S4] Build patient auth login flow',desc:'JWT-based authentication for staff portal.',module:'Security & Auth',status:'done',priority:'High',assignee:'Alex Chen',due:'2026-03-01',progress:100,storyPoints:8,sprintId:pid,notes:'Completed in Sprint 4.',comments:[]},
     {id:uid(),title:'[S4] Design provider profile cards',desc:'Profile cards for provider directory and booking widget.',module:'Admin & Settings',status:'done',priority:'Medium',assignee:'Maria Santos',due:'2026-03-01',progress:100,storyPoints:5,sprintId:pid,notes:'Completed in Sprint 4.',comments:[]},
     {id:uid(),title:'[S4] Smoke test patient registration flow',desc:'End-to-end smoke test of patient onboarding.',module:'Patient Registration',status:'done',priority:'High',assignee:'James Wright',due:'2026-03-01',progress:100,storyPoints:3,sprintId:pid,notes:'Completed in Sprint 4. 2 bugs found and fixed.',comments:[]},
@@ -697,54 +727,179 @@ function seedData(){
     {id:uid(),title:'[S4] Design appointment booking UI mockups',desc:'Figma wireframes and hi-fi designs for booking flow.',module:'Appointments',status:'done',priority:'High',assignee:'Maria Santos',due:'2026-03-01',progress:100,storyPoints:5,sprintId:pid,notes:'Completed in Sprint 4.',comments:[]},
     {id:uid(),title:'[S4] Write API integration test suite',desc:'Automated integration tests for all existing endpoints.',module:'Integrations',status:'done',priority:'Medium',assignee:'James Wright',due:'2026-03-01',progress:100,storyPoints:5,sprintId:pid,notes:'Completed in Sprint 4. 80% coverage.',comments:[]},
   ];
+  tasks=tasks.map(normalizeTask);
   save();
 }
 
-/* ── PERSISTENCE ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ PERSISTENCE Ã¢â€â‚¬Ã¢â€â‚¬ */
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function isoNow(){return new Date().toISOString();}
+function esc(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
+function loadJSON(key,fallback){
+  try{
+    const raw=localStorage.getItem(key);
+    return raw?JSON.parse(raw):fallback;
+  }catch(e){return fallback;}
+}
+function persistJSON(key,value){localStorage.setItem(key,JSON.stringify(value));}
+function normalizeTask(t){
+  return {
+    riskLevel:'medium',
+    reviewer:'',
+    environment:'',
+    repoUrl:'',
+    prUrl:'',
+    nextAction:'',
+    blockedReason:'',
+    definitionOfDone:'',
+    agentStatus:'not_requested',
+    agentOwner:'',
+    lastAgentSummary:'',
+    blockedBy:[],
+    comments:[],
+    ...t
+  };
+}
 
-// Batch-write all tasks (used during seeding; targeted writes used elsewhere)
+/* -- MAPPERS -- */
+function toDbTask(t){
+  return {id:t.id,title:t.title,description:t.desc||null,module:t.module||null,
+    status:t.status||'backlog',priority:t.priority||'Medium',assignee:t.assignee||null,
+    due_date:t.due||null,progress:t.progress||0,story_points:parseInt(t.storyPoints)||0,
+    sprint_id:t.sprintId||null,project_id:t.projectId||null,notes:t.notes||null,
+    blocked_by:t.blockedBy||[],comments:t.comments||[]};
+}
+function fromDbTask(r){
+  return normalizeTask({id:r.id,title:r.title,desc:r.description||'',module:r.module||'',
+    status:r.status||'backlog',priority:r.priority||'Medium',assignee:r.assignee||'',
+    due:r.due_date||'',progress:r.progress||0,storyPoints:r.story_points||0,
+    sprintId:r.sprint_id||'',projectId:r.project_id||'',notes:r.notes||'',
+    blockedBy:r.blocked_by||[],comments:r.comments||[]});
+}
+function toDbMember(m){
+  return {id:m.id,name:m.name,role:m.role||null,email:m.email||null,phone:m.phone||null,
+    dept:m.dept||null,status:m.status||'active',skills:m.skills||null,
+    notes:m.notes||null,color:m.color||'#4f8ef7'};
+}
+function fromDbMember(r){
+  return {id:r.id,name:r.name,role:r.role||'',email:r.email||'',phone:r.phone||'',
+    dept:r.dept||'',status:r.status||'active',skills:r.skills||'',
+    notes:r.notes||'',color:r.color||'#4f8ef7'};
+}
+function toDbProject(p){
+  return {id:p.id,name:p.name,description:p.desc||null,color:p.color||'#4f8ef7',
+    icon:p.icon||null,status:p.status||'active',start_date:p.start||null,
+    end_date:p.end||null,owner:p.owner||null,notes:p.notes||null};
+}
+function fromDbProject(r){
+  return {id:r.id,name:r.name,desc:r.description||'',color:r.color||'#4f8ef7',
+    icon:r.icon||'',status:r.status||'active',start:r.start_date||'',
+    end:r.end_date||'',owner:r.owner||'',notes:r.notes||''};
+}
+/* -- DB STATUS -- */
+function setDbStatus(mode,label){
+  sbMode=mode;
+  const dot=document.getElementById('storage-status-dot');
+  const lbl=document.getElementById('storage-status-label');
+  if(dot)dot.style.background=mode==='cloud'?'var(--green)':mode==='connecting'?'var(--yellow)':'var(--muted)';
+  if(lbl)lbl.textContent=label||mode;
+}
+function openSystemModal(){
+  const info=sbMode==='cloud'?'Connected to Supabase (cloud)':'Running on local storage (offline)';
+  alert('Storage mode: '+info);
+}
+/* -- SUPABASE REALTIME -- */
+function setupRealtime(){
+  if(_channelActive||!sb)return;
+  _channelActive=true;
+  sb.channel('board').on('postgres_changes',{event:'*',schema:'public',table:'tasks'},()=>{
+    sb.from('tasks').select('*').then(({data})=>{if(data){tasks=data.map(fromDbTask);renderAll();}});
+  }).subscribe();
+}
+/* -- SAVE (optimistic: local + async cloud) -- */
 function save(){
-  if(db){
-    const batch=db.batch();
-    tasks.forEach(t=>batch.set(db.collection('tasks').doc(t.id),t));
-    batch.commit().catch(console.error);
-  } else {
-    localStorage.setItem('emr-tasks',JSON.stringify(tasks));
-  }
+  localStorage.setItem(STORAGE_KEYS.tasks,JSON.stringify(tasks));
+  if(sbMode==='cloud')
+    sb.from('tasks').upsert(tasks.map(toDbTask),{onConflict:'id'})
+      .then(({error})=>{if(error)console.error('save tasks:',error);});
 }
 function saveMembers(){
-  if(db){
-    const batch=db.batch();
-    members.forEach(m=>batch.set(db.collection('members').doc(m.id),m));
-    batch.commit().catch(console.error);
-  } else {
-    localStorage.setItem('emr-members',JSON.stringify(members));
-  }
+  localStorage.setItem(STORAGE_KEYS.members,JSON.stringify(members));
+  if(sbMode==='cloud')
+    sb.from('members').upsert(members.map(toDbMember),{onConflict:'id'})
+      .then(({error})=>{if(error)console.error('save members:',error);});
 }
 function saveProjects(){
-  if(db){
-    const batch=db.batch();
-    projects.forEach(p=>batch.set(db.collection('projects').doc(p.id),p));
-    batch.commit().catch(console.error);
-  } else {
-    localStorage.setItem('emr-projects',JSON.stringify(projects));
-  }
+  localStorage.setItem(STORAGE_KEYS.projects,JSON.stringify(projects));
+  if(sbMode==='cloud')
+    sb.from('projects').upsert(projects.map(toDbProject),{onConflict:'id'})
+      .then(({error})=>{if(error)console.error('save projects:',error);});
 }
-function saveCfg(){
-  if(db){
-    db.collection('meta').doc('sprintConfig').set(sprintCfg).catch(console.error);
-  } else {
-    localStorage.setItem('emr-scfg',JSON.stringify(sprintCfg));
-  }
+function saveCfg(){persistJSON(STORAGE_KEYS.sprintCfg,sprintCfg);}
+function saveEvents(){persistJSON(STORAGE_KEYS.events,events);}
+function saveAgentRuns(){persistJSON(STORAGE_KEYS.agentRuns,agentRuns);}
+function saveAll(){
+  save();saveMembers();saveProjects();saveCfg();saveEvents();saveAgentRuns();
+  localStorage.setItem(STORAGE_KEYS.hist,histRaw);
+  localStorage.setItem(STORAGE_KEYS.user,currentUser);
 }
+function recordEvent(entityType,entityId,action,beforeState,afterState,metadata={}){
+  events.unshift({id:uid(),entityType,entityId,action,actorType:'user',actorName:currentUser,
+    beforeState:beforeState?clone(beforeState):null,afterState:afterState?clone(afterState):null,
+    metadata,createdAt:isoNow()});
+  events=events.slice(0,500);
+  saveEvents();
+}
+function recordAgentRun(task,runType,summary){
+  const run={id:uid(),agentType:runType,trigger:'manual',status:'pending',
+    taskId:task.id,projectId:task.projectId||'',userName:currentUser,summary,createdAt:isoNow()};
+  agentRuns.unshift(run);agentRuns=agentRuns.slice(0,200);saveAgentRuns();return run;
+}
+/* -- LOAD LOCAL (localStorage fallback) -- */
+function loadLocal(){
+  tasks=(loadJSON(STORAGE_KEYS.tasks,[])||[]).map(normalizeTask);
+  members=loadJSON(STORAGE_KEYS.members,[])||[];
+  projects=loadJSON(STORAGE_KEYS.projects,[])||[];
+  events=loadJSON(STORAGE_KEYS.events,[])||[];
+  agentRuns=loadJSON(STORAGE_KEYS.agentRuns,[])||[];
+  if(!members.length)seedMembers();
+  if(!tasks.length)seedData();
+  if(!projects.length)seedProjects();
+  tasks=tasks.map(normalizeTask);
+  if(!events.length)recordEvent('system','board','created',null,{mode:'local'},{source:'bootstrap'});
+}
+/* -- LOAD DATA (Supabase) -- */
+async function loadData(){
+  setDbStatus('connecting','Connecting...');
+  try{
+    sb=supabase.createClient(SB_URL,SB_KEY);
+    const [tr,mr,pr]=await Promise.all([
+      sb.from('tasks').select('*'),
+      sb.from('members').select('*'),
+      sb.from('projects').select('*'),
+    ]);
+    if(tr.error||mr.error||pr.error)throw tr.error||mr.error||pr.error;
+    tasks=(tr.data||[]).map(fromDbTask);
+    members=(mr.data||[]).map(fromDbMember);
+    projects=(pr.data||[]).map(fromDbProject);
+    if(!tasks.length&&!members.length){seedMembers();seedData();seedProjects();}
+    tasks=tasks.map(normalizeTask);
+    sbMode='cloud';setDbStatus('cloud','Supabase');setupRealtime();
+  }catch(err){
+    console.warn('Supabase unavailable, using local:',err);
+    loadLocal();setDbStatus('local','Local');
+  }
+  renderAll();
+}
+function bootstrapState(){loadLocal();}
 
-/* ── PROJECT SEEDS ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ PROJECT SEEDS Ã¢â€â‚¬Ã¢â€â‚¬ */
 function seedProjects(){
   projects=[
-    {id:'proj-1', name:'EMR Core Platform',          desc:'Core EMR build: patient registration, clinical notes, prescriptions, and base admin. Foundation for all other modules.',                                        color:'#4f8ef7', icon:'⚕️',  status:'active',    start:'2026-01-05', end:'2026-06-30', owner:'Alex Chen',    notes:''},
-    {id:'proj-2', name:'Booking Widget Integration', desc:'End-to-end online booking widget: HFH API integration, Stripe payments, Twilio SMS confirmations, and Wix embed for Prosper Direct Health.',                  color:'#22c97a', icon:'🔗',  status:'active',    start:'2026-03-10', end:'2026-04-15', owner:'Alex Chen',    notes:'Developer handoff doc in Google Drive. Target launch: April 2026.'},
-    {id:'proj-3', name:'Med Spa UI Redesign',         desc:'Premium light-mode redesign targeting the med spa aesthetic market. Full UX audit, mobile responsiveness, and brand alignment with Boulevard-tier quality.', color:'#e879f9', icon:'🎨',  status:'active',    start:'2026-04-01', end:'2026-07-01', owner:'Maria Santos', notes:'Competitor benchmarks: Boulevard, Aesthetic Record, Jane App.'},
+    {id:'proj-1', name:'EMR Core Platform',          desc:'Core EMR build: patient registration, clinical notes, prescriptions, and base admin. Foundation for all other modules.',                                        color:'#4f8ef7', icon:'Ã¢Å¡â€¢Ã¯Â¸Â',  status:'active',    start:'2026-01-05', end:'2026-06-30', owner:'Alex Chen',    notes:''},
+    {id:'proj-2', name:'Booking Widget Integration', desc:'End-to-end online booking widget: HFH API integration, Stripe payments, Twilio SMS confirmations, and Wix embed for Prosper Direct Health.',                  color:'#22c97a', icon:'Ã°Å¸â€â€”',  status:'active',    start:'2026-03-10', end:'2026-04-15', owner:'Alex Chen',    notes:'Developer handoff doc in Google Drive. Target launch: April 2026.'},
+    {id:'proj-3', name:'Med Spa UI Redesign',         desc:'Premium light-mode redesign targeting the med spa aesthetic market. Full UX audit, mobile responsiveness, and brand alignment with Boulevard-tier quality.', color:'#e879f9', icon:'Ã°Å¸Å½Â¨',  status:'active',    start:'2026-04-01', end:'2026-07-01', owner:'Maria Santos', notes:'Competitor benchmarks: Boulevard, Aesthetic Record, Jane App.'},
   ];
   saveProjects();
   // Assign existing seed tasks to projects
@@ -760,7 +915,7 @@ function seedProjects(){
   save();
 }
 
-/* ── FILTERING ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ FILTERING Ã¢â€â‚¬Ã¢â€â‚¬ */
 function getFiltered(){
   const q  =(document.getElementById('search-input')?.value||'').toLowerCase();
   const mod= document.getElementById('filter-module')?.value||'';
@@ -774,7 +929,7 @@ function getFiltered(){
   );
 }
 
-/* ── TAB SWITCH ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ TAB SWITCH Ã¢â€â‚¬Ã¢â€â‚¬ */
 let currentTab='projects';
 function switchTab(tab){
   currentTab=tab;
@@ -790,10 +945,10 @@ function switchTab(tab){
 document.getElementById('projects-view').style.display='block';
 ['board-view','list-view','stats-view','team-view'].forEach(id=>document.getElementById(id).style.display='none');
 
-/* ── RENDER ALL ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ RENDER ALL Ã¢â€â‚¬Ã¢â€â‚¬ */
 function renderAll(){
   populateProjectFilter(); populateSprintFilter(); populateAssigneeFilter();
-  populateAssigneeSelect(); populateProjectSelect(); populateOwnerSelect();
+  populateAssigneeSelect(); populateReviewerSelect(); populateProjectSelect(); populateOwnerSelect();
   updateActiveProjectPill();
   renderProjects(); renderBoard(); renderList(); renderStats(); renderTeam();
 }
@@ -818,13 +973,13 @@ function updateActiveProjectPill(){
 function populateProjectSelect(){
   const sel=document.getElementById('f-project');if(!sel)return;
   const cur=sel.value;
-  sel.innerHTML='<option value="">— No Project —</option>'+projects.map(p=>`<option value="${p.id}"${p.id===cur?' selected':''}>${p.icon} ${p.name}</option>`).join('');
+  sel.innerHTML='<option value="">Ã¢â‚¬â€ No Project Ã¢â‚¬â€</option>'+projects.map(p=>`<option value="${p.id}"${p.id===cur?' selected':''}>${p.icon} ${p.name}</option>`).join('');
 }
 function populateOwnerSelect(){
   const sel=document.getElementById('p-owner');if(!sel)return;
   const cur=sel.value;
   const all=[...new Set([...members.map(m=>m.name),...tasks.map(t=>t.assignee).filter(Boolean)])].sort();
-  sel.innerHTML='<option value="">— Unassigned —</option>'+all.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
+  sel.innerHTML='<option value="">Ã¢â‚¬â€ Unassigned Ã¢â‚¬â€</option>'+all.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
 }
 
 function populateSprintFilter(){
@@ -841,12 +996,18 @@ function populateAssigneeSelect(){
   const sel=document.getElementById('f-assignee');if(!sel)return;
   const cur=sel.value;
   const all=[...new Set([...members.map(m=>m.name),...tasks.map(t=>t.assignee).filter(Boolean)])].sort();
-  sel.innerHTML='<option value="">— Unassigned —</option>'+all.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
+  sel.innerHTML='<option value="">Ã¢â‚¬â€ Unassigned Ã¢â‚¬â€</option>'+all.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
+}
+function populateReviewerSelect(){
+  const sel=document.getElementById('f-reviewer');if(!sel)return;
+  const cur=sel.value;
+  const all=[...new Set([...members.map(m=>m.name),...tasks.map(t=>t.reviewer).filter(Boolean)])].sort();
+  sel.innerHTML='<option value="">Ã¢â‚¬â€ None Ã¢â‚¬â€</option>'+all.map(n=>`<option${n===cur?' selected':''}>${n}</option>`).join('');
 }
 function populateSprintSelect(){
   const sel=document.getElementById('f-sprint');if(!sel)return;
   const cur=sel.value; const sps=genSprints(); const cs=curSprint(sps);
-  sel.innerHTML='<option value="">No Sprint</option>'+sps.map(s=>`<option value="${s.id}"${s.id===cur?' selected':''}>${s.label} ${s.id===cs?.id?'★':''} (${s.startDate}→${s.endDate})</option>`).join('');
+  sel.innerHTML='<option value="">No Sprint</option>'+sps.map(s=>`<option value="${s.id}"${s.id===cur?' selected':''}>${s.label} ${s.id===cs?.id?'Ã¢Ëœâ€¦':''} (${s.startDate}Ã¢â€ â€™${s.endDate})</option>`).join('');
 }
 function getAssigneeColor(name){const m=members.find(m=>m.name===name);return m?m.color:'var(--muted)';}
 function initials(n){return n?n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase():'?';}
@@ -855,7 +1016,7 @@ function avi(name,size=20){
   return `<span style="width:${size}px;height:${size}px;border-radius:50%;background:${c};display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size*.38)}px;font-weight:700;color:#fff;flex-shrink:0">${i}</span>`;
 }
 
-/* ── PROJECTS RENDER ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ PROJECTS RENDER Ã¢â€â‚¬Ã¢â€â‚¬ */
 const PROJECT_COLORS = ['#4f8ef7','#22c97a','#f7c948','#f76464','#c084fc','#22d3ee','#fb923c','#7c6af7','#e879f9','#34d399','#f472b6','#a78bfa'];
 const PS_MAP = {active:'ps-active',hold:'ps-hold',completed:'ps-completed',archived:'ps-archived'};
 const PS_LBL = {active:'Active',hold:'On Hold',completed:'Completed',archived:'Archived'};
@@ -864,7 +1025,7 @@ function renderProjects(){
   const grid=document.getElementById('projects-grid');
   document.getElementById('project-count').textContent=projects.length;
   if(!projects.length){
-    grid.innerHTML=`<div class="empty-projects"><div class="ep-icon">📁</div><p style="font-weight:700;font-size:1rem;margin-bottom:6px">No projects yet</p><p>Click <strong>+ New Project</strong> to create your first project.</p></div>`;
+    grid.innerHTML=`<div class="empty-projects"><div class="ep-icon">Ã°Å¸â€œÂ</div><p style="font-weight:700;font-size:1rem;margin-bottom:6px">No projects yet</p><p>Click <strong>+ New Project</strong> to create your first project.</p></div>`;
     return;
   }
   grid.innerHTML=projects.map(p=>{
@@ -883,20 +1044,20 @@ function renderProjects(){
         <div class="project-card-header">
           <div class="project-card-icon" style="background:${p.color}22;color:${p.color}">${p.icon}</div>
           <div class="project-card-actions">
-            <button class="icon-btn" onclick="event.stopPropagation();openProjectModal('${p.id}')">✏️</button>
-            <button class="icon-btn danger" onclick="event.stopPropagation();confirmDeleteProject('${p.id}')">🗑</button>
+            <button class="icon-btn" onclick="event.stopPropagation();openProjectModal('${p.id}')">Ã¢Å“ÂÃ¯Â¸Â</button>
+            <button class="icon-btn danger" onclick="event.stopPropagation();confirmDeleteProject('${p.id}')">Ã°Å¸â€”â€˜</button>
           </div>
         </div>
         <div class="project-name">${p.name}</div>
         <div class="project-desc">${p.desc||'<span style="opacity:.4">No description</span>'}</div>
         <div class="project-meta">
           <span class="project-status-badge ${PS_MAP[p.status]||'ps-archived'}">${PS_LBL[p.status]||p.status}</span>
-          ${p.owner?`<span style="font-size:.75rem;color:var(--muted)">👤 ${p.owner}</span>`:''}
-          ${p.end?`<span style="font-size:.75rem;color:var(--muted)">📅 ${p.end}</span>`:''}
+          ${p.owner?`<span style="font-size:.75rem;color:var(--muted)">Ã°Å¸â€˜Â¤ ${p.owner}</span>`:''}
+          ${p.end?`<span style="font-size:.75rem;color:var(--muted)">Ã°Å¸â€œâ€¦ ${p.end}</span>`:''}
         </div>
         ${assignees.length?`<div class="project-members-row">${assignees.map(n=>avi(n,22)).join('')}<span style="font-size:.72rem;color:var(--muted);margin-left:4px">${assignees.length} contributor${assignees.length>1?'s':''}</span></div>`:''}
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-          <button class="open-board-btn" onclick="event.stopPropagation();openProjectBoard('${p.id}')">Open Board →</button>
+          <button class="open-board-btn" onclick="event.stopPropagation();openProjectBoard('${p.id}')">Open Board Ã¢â€ â€™</button>
           <span style="font-size:.72rem;color:var(--muted)">${pct}% done</span>
         </div>
       </div>
@@ -919,7 +1080,7 @@ function openProjectBoard(id){
   switchTab('board');
 }
 
-/* ── PROJECT MODAL ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ PROJECT MODAL Ã¢â€â‚¬Ã¢â€â‚¬ */
 function buildProjectColorPicker(){
   document.getElementById('project-color-picker').innerHTML=PROJECT_COLORS.map(c=>
     `<div onclick="selectProjectColor('${c}')" style="width:26px;height:26px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${c===selProjectColor?'#fff':'transparent'};transition:all .15s;transform:${c===selProjectColor?'scale(1.2)':'scale(1)'}"></div>`
@@ -931,11 +1092,11 @@ function openProjectModal(id){
   editProjectId=id||null;
   const p=id?projects.find(p=>p.id===id):null;
   selProjectColor=p?.color||PROJECT_COLORS[Math.floor(Math.random()*PROJECT_COLORS.length)];
-  document.getElementById('project-modal-title').textContent=p?'✏️ Edit Project':'➕ New Project';
+  document.getElementById('project-modal-title').textContent=p?'Ã¢Å“ÂÃ¯Â¸Â Edit Project':'Ã¢Å¾â€¢ New Project';
   document.getElementById('p-name').value  =p?.name||'';
   document.getElementById('p-desc').value  =p?.desc||'';
   document.getElementById('p-status').value=p?.status||'active';
-  document.getElementById('p-icon').value  =p?.icon||'🏗️';
+  document.getElementById('p-icon').value  =p?.icon||'Ã°Å¸Ââ€”Ã¯Â¸Â';
   document.getElementById('p-start').value =p?.start||'';
   document.getElementById('p-end').value   =p?.end||'';
   document.getElementById('p-notes').value =p?.notes||'';
@@ -949,6 +1110,7 @@ function closeProjectModal(){ document.getElementById('project-overlay').classLi
 function saveProject(){
   const name=document.getElementById('p-name').value.trim();
   if(!name){alert('Project name is required.');return;}
+  const before=editProjectId?clone(projects.find(p=>p.id===editProjectId)):null;
   const data={
     id: editProjectId||('proj-'+uid()),
     name, color: selProjectColor,
@@ -962,6 +1124,7 @@ function saveProject(){
   };
   if(editProjectId){ const i=projects.findIndex(p=>p.id===editProjectId); if(i>-1)projects[i]=data; }
   else projects.push(data);
+  recordEvent('project',data.id,editProjectId?'updated':'created',before,data);
   saveProjects(); closeProjectModal(); renderAll();
 }
 function deleteProject(){
@@ -972,6 +1135,7 @@ function deleteProject(){
   save();
   if(activeProjectId===editProjectId) activeProjectId='';
   projects=projects.filter(p=>p.id!==editProjectId);
+  recordEvent('project',editProjectId,'deleted',p,null);
   saveProjects(); closeProjectModal(); renderAll();
 }
 function confirmDeleteProject(id){
@@ -981,10 +1145,11 @@ function confirmDeleteProject(id){
   save();
   if(activeProjectId===id) activeProjectId='';
   projects=projects.filter(px=>px.id!==id);
+  recordEvent('project',id,'deleted',p,null);
   saveProjects(); renderAll();
 }
 
-/* ── BOARD ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ BOARD Ã¢â€â‚¬Ã¢â€â‚¬ */
 function renderBoard(){
   const board=document.getElementById('kanban-board'), filtered=getFiltered();
   const sps=genSprints();
@@ -1014,6 +1179,7 @@ function cardHTML(t,sps){
   const blocked=isBlocked(t);
   const depCount=(t.blockedBy||[]).length;
   const blocksCount=tasks.filter(x=>(x.blockedBy||[]).includes(t.id)).length;
+  const safeTitle=esc(t.title), safeDesc=esc(t.desc), safeModule=esc(t.module), safeAssignee=esc(t.assignee||'Unassigned');
   return `<div class="card${blocked?' blocked-card':''}" draggable="true"
       ondragstart="cardDragStart(event,'${t.id}')"
       ondragend="cardDragEnd(event)"
@@ -1021,46 +1187,48 @@ function cardHTML(t,sps){
       style="${blocked?'border-color:#5c1a1a;':''}" >
     <div class="card-priority" style="background:${pc}"></div>
     <div style="padding-left:6px">
-      <div class="card-module">${t.module}</div>
-      <div class="card-title">${t.title}</div>
-      ${t.desc?`<div class="card-desc">${t.desc}</div>`:''}
+      <div class="card-module">${safeModule}</div>
+      <div class="card-title">${safeTitle}</div>
+      ${t.desc?`<div class="card-desc">${safeDesc}</div>`:''}
       <div class="card-meta">
         <span class="tag prio-${t.priority.toLowerCase()}">${t.priority}</span>
+        <span class="tag risk-${t.riskLevel||'medium'}">${esc((t.riskLevel||'medium').toUpperCase())}</span>
         ${t.storyPoints?`<span class="sp-badge">${t.storyPoints}sp</span>`:''}
-        ${blocked?`<span class="blocked-badge">🚫 Blocked</span>`:''}
-        ${!blocked&&depCount?`<span class="dep-badge">🔗 ${depCount} dep</span>`:''}
-        ${blocksCount?`<span class="dep-badge" style="background:#1a2a1a;color:#86efac;border-color:#2a4a2a">⬆ blocks ${blocksCount}</span>`:''}
+        ${t.agentStatus&&t.agentStatus!=='not_requested'?`<span class="agent-chip">${esc(t.agentStatus)}</span>`:''}
+        ${blocked?`<span class="blocked-badge">Ã°Å¸Å¡Â« Blocked</span>`:''}
+        ${!blocked&&depCount?`<span class="dep-badge">Ã°Å¸â€â€” ${depCount} dep</span>`:''}
+        ${blocksCount?`<span class="dep-badge" style="background:#1a2a1a;color:#86efac;border-color:#2a4a2a">Ã¢Â¬â€  blocks ${blocksCount}</span>`:''}
         ${sp?`<span style="font-size:.68rem;color:var(--muted);background:var(--surface2);padding:1px 6px;border-radius:8px">${sp.label}</span>`:''}
-        ${t.comments?.length?`<span style="font-size:.72rem;color:var(--muted)">💬 ${t.comments.length}</span>`:''}
-        <span style="margin-left:auto;display:flex;align-items:center;gap:4px">${avi(t.assignee||'',18)}<span style="font-size:.7rem;color:var(--muted)">${t.assignee||'Unassigned'}</span></span>
+        ${t.comments?.length?`<span style="font-size:.72rem;color:var(--muted)">Ã°Å¸â€™Â¬ ${t.comments.length}</span>`:''}
+        <span style="margin-left:auto;display:flex;align-items:center;gap:4px">${avi(t.assignee||'',18)}<span style="font-size:.7rem;color:var(--muted)">${safeAssignee}</span></span>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${t.progress||0}%"></div></div>
-      <div class="card-footer"><span class="card-due">${t.due?'📅 '+t.due:''}</span><span style="font-size:.72rem;color:var(--muted)">${t.progress||0}%</span></div>
+      <div class="card-footer"><span class="card-due">${t.due?'Ã°Å¸â€œâ€¦ '+t.due:''}</span><span style="font-size:.72rem;color:var(--muted)">${t.progress||0}%</span></div>
     </div>
   </div>`;
 }
 
-/* ── LIST ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ LIST Ã¢â€â‚¬Ã¢â€â‚¬ */
 function renderList(){
   const body=document.getElementById('list-body'), filtered=getFiltered(), sps=genSprints();
   if(!filtered.length){body.innerHTML=`<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">No tasks found</td></tr>`;return;}
   body.innerHTML=filtered.map(t=>{
     const sp=sps.find(s=>s.id===t.sprintId);
     return `<tr onclick="openModal('${t.id}')">
-      <td><strong>${t.title}</strong></td>
-      <td style="color:var(--muted)">${t.module}</td>
+      <td><strong>${esc(t.title)}</strong></td>
+      <td style="color:var(--muted)">${esc(t.module)}</td>
       <td><span class="tag status-${t.status}">${STAT_LBL[t.status]}</span></td>
       <td><span class="tag prio-${t.priority.toLowerCase()}">${t.priority}</span></td>
-      <td style="text-align:center">${t.storyPoints?`<span class="sp-badge">${t.storyPoints}</span>`:'<span style="color:var(--border)">—</span>'}</td>
-      <td style="color:var(--muted);font-size:.8rem">${sp?sp.label:'—'}</td>
-      <td><span style="display:flex;align-items:center;gap:6px">${avi(t.assignee||'',20)} ${t.assignee||'—'}</span></td>
-      <td style="color:var(--muted)">${t.due||'—'}</td>
+      <td style="text-align:center">${t.storyPoints?`<span class="sp-badge">${t.storyPoints}</span>`:'<span style="color:var(--border)">Ã¢â‚¬â€</span>'}</td>
+      <td style="color:var(--muted);font-size:.8rem">${sp?sp.label:'Ã¢â‚¬â€'}</td>
+      <td><span style="display:flex;align-items:center;gap:6px">${avi(t.assignee||'',20)} ${esc(t.assignee||'Ã¢â‚¬â€')}</span></td>
+      <td style="color:var(--muted)">${esc(t.due||'Ã¢â‚¬â€')}</td>
       <td style="min-width:100px"><div class="progress-bar" style="margin:0"><div class="progress-fill" style="width:${t.progress||0}%"></div></div><span style="font-size:.72rem;color:var(--muted)">${t.progress||0}%</span></td>
     </tr>`;
   }).join('');
 }
 
-/* ── STATS ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ STATS Ã¢â€â‚¬Ã¢â€â‚¬ */
 function renderStats(){
   renderBurndown();
   const all=tasks, counts={};
@@ -1086,25 +1254,45 @@ function renderStats(){
     return `<div class="module-row"><div class="module-name">${mod}</div><div class="module-bar"><div class="module-fill" style="width:${p}%;background:${MOD_CLR[i]}"></div></div><div class="module-pct">${p}%</div></div>`;
   }).join('');
 
+  renderAgentOps();
   if(!members.length){document.getElementById('analytics-vel').innerHTML='<div style="color:var(--muted);font-size:.85rem">Add team members to see velocity.</div>';return;}
   const sps=genSprints(), cs=curSprint(sps);
   const past=sps.filter(s=>spStatus(s)==='past').slice(-4);
   const shown=[...past,...(cs?[cs]:[])];
-  let html='<div style="overflow-x:auto"><table class="vel-table"><thead><tr><th>Member</th>'+shown.map(s=>`<th>${s.label}${s.id===cs?.id?' ★':''}</th>`).join('')+'<th>Avg</th></tr></thead><tbody>';
+  let html='<div style="overflow-x:auto"><table class="vel-table"><thead><tr><th>Member</th>'+shown.map(s=>`<th>${s.label}${s.id===cs?.id?' Ã¢Ëœâ€¦':''}</th>`).join('')+'<th>Avg</th></tr></thead><tbody>';
   members.forEach(m=>{
     const data=memberVelData(m,sps);
     const sd=shown.map(s=>data.find(d=>d.sprint===s.number)||{sprint:s.number,pts:0,status:spStatus(s)});
     const avg=velAvg(sd);
-    html+=`<tr><td><span style="display:flex;align-items:center;gap:8px">${avi(m.name,22)} ${m.name}</span></td>${sd.map(d=>`<td class="${d.status==='current'?'vel-cell-cur':d.pts===0?'vel-cell-empty':''}">${d.pts||'—'}</td>`).join('')}<td><span class="avg-chip">${avg}</span></td></tr>`;
+    html+=`<tr><td><span style="display:flex;align-items:center;gap:8px">${avi(m.name,22)} ${m.name}</span></td>${sd.map(d=>`<td class="${d.status==='current'?'vel-cell-cur':d.pts===0?'vel-cell-empty':''}">${d.pts||'Ã¢â‚¬â€'}</td>`).join('')}<td><span class="avg-chip">${avg}</span></td></tr>`;
   });
   const totals=shown.map(s=>members.reduce((sum,m)=>{const data=memberVelData(m,sps);const d=data.find(x=>x.sprint===s.number);return sum+(d?d.pts:0);},0));
   const teamAvg=velAvg(shown.map((s,i)=>({pts:totals[i],status:spStatus(s)})));
-  html+=`<tr class="team-total"><td>🏆 Team Total</td>${totals.map((pts,i)=>`<td class="${shown[i]?.id===cs?.id?'vel-cell-cur':pts===0?'vel-cell-empty':''}">${pts||0}</td>`).join('')}<td><span class="avg-chip">${teamAvg}</span></td></tr>`;
+  html+=`<tr class="team-total"><td>Ã°Å¸Ââ€  Team Total</td>${totals.map((pts,i)=>`<td class="${shown[i]?.id===cs?.id?'vel-cell-cur':pts===0?'vel-cell-empty':''}">${pts||0}</td>`).join('')}<td><span class="avg-chip">${teamAvg}</span></td></tr>`;
   html+='</tbody></table></div>';
   document.getElementById('analytics-vel').innerHTML=html;
 }
 
-/* ── TEAM ── */
+function renderAgentOps(){
+  const box=document.getElementById('agent-ops');
+  if(!box)return;
+  const queued=tasks.filter(t=>t.agentStatus==='queued').length;
+  const running=tasks.filter(t=>t.agentStatus==='running').length;
+  const needsHuman=tasks.filter(t=>t.agentStatus==='needs_human').length;
+  const recent=agentRuns.slice(0,5);
+  box.innerHTML=`
+    <div class="mini-grid">
+      <div class="mini-stat"><div class="mini-stat-label">Queued</div><div class="mini-stat-value">${queued}</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Running</div><div class="mini-stat-value">${running}</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Needs Human</div><div class="mini-stat-value">${needsHuman}</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Events Logged</div><div class="mini-stat-value">${events.length}</div></div>
+    </div>
+    <div style="margin-top:14px">
+      ${recent.length?recent.map(run=>`<div class="comment activity-event"><div class="comment-meta">${esc(run.agentType)} Â· ${esc(run.status)} Â· ${new Date(run.createdAt).toLocaleString()}</div>${esc(run.summary||'Queued run')}</div>`).join(''):'<div style="color:var(--muted);font-size:.82rem">No agent runs queued yet. Open a task and use Queue Agent Run to create the first run.</div>'}
+    </div>`;
+}
+
+/* Ã¢â€â‚¬Ã¢â€â‚¬ TEAM Ã¢â€â‚¬Ã¢â€â‚¬ */
 function renderTeam(){
   document.getElementById('team-count').textContent=members.length;
   renderVelocityTable();
@@ -1114,21 +1302,21 @@ function renderTeam(){
 function renderVelocityTable(){
   const sps=genSprints(), cs=curSprint(sps);
   const pill=document.getElementById('sprint-label-pill');
-  if(cs) pill.textContent=`${cs.label}: ${cs.startDate} → ${cs.endDate}`;
+  if(cs) pill.textContent=`${cs.label}: ${cs.startDate} Ã¢â€ â€™ ${cs.endDate}`;
   const past=sps.filter(s=>spStatus(s)==='past').slice(-5);
   const shown=[...past,...(cs?[cs]:[])];
   let totals=shown.map(()=>0);
-  let html=`<thead><tr><th>Team Member</th>${shown.map(s=>`<th title="${s.startDate} → ${s.endDate}">${s.label}${s.id===cs?.id?' ★':''}</th>`).join('')}<th>Avg / Sprint</th><th>Trend</th></tr></thead><tbody>`;
+  let html=`<thead><tr><th>Team Member</th>${shown.map(s=>`<th title="${s.startDate} Ã¢â€ â€™ ${s.endDate}">${s.label}${s.id===cs?.id?' Ã¢Ëœâ€¦':''}</th>`).join('')}<th>Avg / Sprint</th><th>Trend</th></tr></thead><tbody>`;
   members.forEach(m=>{
     const data=memberVelData(m,sps);
     const sd=shown.map(s=>data.find(d=>d.sprint===s.number)||{sprint:s.number,pts:0,status:spStatus(s)});
     sd.forEach((d,i)=>totals[i]+=d.pts);
     const avg=velAvg(sd), trend=velTrend(sd);
-    html+=`<tr><td><span style="display:flex;align-items:center;gap:8px">${avi(m.name,22)} ${m.name}</span></td>${sd.map(d=>`<td class="${d.status==='current'?'vel-cell-cur':d.pts===0?'vel-cell-empty':''}">${d.pts||'—'}</td>`).join('')}<td><span class="avg-chip">${avg} pts</span></td><td class="${trend.cls}" style="font-weight:700">${trend.icon}</td></tr>`;
+    html+=`<tr><td><span style="display:flex;align-items:center;gap:8px">${avi(m.name,22)} ${m.name}</span></td>${sd.map(d=>`<td class="${d.status==='current'?'vel-cell-cur':d.pts===0?'vel-cell-empty':''}">${d.pts||'Ã¢â‚¬â€'}</td>`).join('')}<td><span class="avg-chip">${avg} pts</span></td><td class="${trend.cls}" style="font-weight:700">${trend.icon}</td></tr>`;
   });
   const teamAvg=velAvg(shown.map((s,i)=>({pts:totals[i],status:spStatus(s)})));
   const teamTrend=velTrend(shown.map((s,i)=>({pts:totals[i],status:spStatus(s)})));
-  html+=`<tr class="team-total"><td>🏆 Team Total</td>${totals.map((pts,i)=>`<td class="${shown[i]?.id===cs?.id?'vel-cell-cur':pts===0?'vel-cell-empty':''}">${pts||0}</td>`).join('')}<td><span class="avg-chip">${teamAvg} pts</span></td><td class="${teamTrend.cls}" style="font-weight:700">${teamTrend.icon}</td></tr>`;
+  html+=`<tr class="team-total"><td>Ã°Å¸Ââ€  Team Total</td>${totals.map((pts,i)=>`<td class="${shown[i]?.id===cs?.id?'vel-cell-cur':pts===0?'vel-cell-empty':''}">${pts||0}</td>`).join('')}<td><span class="avg-chip">${teamAvg} pts</span></td><td class="${teamTrend.cls}" style="font-weight:700">${teamTrend.icon}</td></tr>`;
   html+='</tbody>';
   document.getElementById('vel-table').innerHTML=html;
 }
@@ -1136,12 +1324,12 @@ function renderVelocityTable(){
 function renderMemberCards(){
   const grid=document.getElementById('team-grid');
   if(!members.length){
-    grid.innerHTML=`<div class="empty-team"><div class="empty-icon">👥</div><p>No team members yet.</p><p style="margin-top:6px;font-size:.8rem">Click <strong>+ Add Member</strong> to get started.</p></div>`;
+    grid.innerHTML=`<div class="empty-team"><div class="empty-icon">Ã°Å¸â€˜Â¥</div><p>No team members yet.</p><p style="margin-top:6px;font-size:.8rem">Click <strong>+ Add Member</strong> to get started.</p></div>`;
     return;
   }
   const sps=genSprints(), cs=curSprint(sps);
   const statusMap={active:'status-active',away:'status-away',offline:'status-offline'};
-  const statusLbl={active:'🟢 Active',away:'🟡 Away',offline:'⚫ Offline'};
+  const statusLbl={active:'Ã°Å¸Å¸Â¢ Active',away:'Ã°Å¸Å¸Â¡ Away',offline:'Ã¢Å¡Â« Offline'};
   grid.innerHTML=members.map(m=>{
     const ini=initials(m.name);
     const myTasks=tasks.filter(t=>t.assignee===m.name);
@@ -1155,28 +1343,28 @@ function renderMemberCards(){
     const spark=sparkline(data,m.color||'#4f8ef7');
     return `<div class="member-card">
       <div class="member-actions">
-        <button class="icon-btn" onclick="openMemberModal('${m.id}')">✏️ Edit</button>
-        <button class="icon-btn danger" onclick="confirmDeleteMember('${m.id}')">🗑</button>
+        <button class="icon-btn" onclick="openMemberModal('${m.id}')">Ã¢Å“ÂÃ¯Â¸Â Edit</button>
+        <button class="icon-btn danger" onclick="confirmDeleteMember('${m.id}')">Ã°Å¸â€”â€˜</button>
       </div>
       <div class="member-top">
         <div class="member-avatar" style="background:${m.color||'#4f8ef7'}">${ini}</div>
         <div class="member-info">
           <div class="member-name">${m.name}</div>
-          <div class="member-role">${m.role}${m.dept?' · '+m.dept:''}</div>
+          <div class="member-role">${m.role}${m.dept?' Ã‚Â· '+m.dept:''}</div>
           ${m.email?`<a class="member-email" href="mailto:${m.email}">${m.email}</a>`:''}
         </div>
       </div>
       <span class="status-badge ${statusMap[m.status]||'status-offline'}">${statusLbl[m.status]||'Offline'}</span>
       <div class="vel-card-sec">
         <div class="vel-card-hdr">
-          <span class="vel-card-title">⚡ Velocity · ${cs?cs.label:'Sprint'}</span>
+          <span class="vel-card-title">Ã¢Å¡Â¡ Velocity Ã‚Â· ${cs?cs.label:'Sprint'}</span>
           <span class="${trend.cls}" style="font-size:.82rem;font-weight:700">${trend.icon}</span>
         </div>
         <div class="vel-pts-row">
           <div class="vel-pts" style="color:${m.color||'#4f8ef7'}">${curPts}</div>
           <div class="vel-pts-unit">pts this sprint</div>
         </div>
-        <div class="vel-avg-row">Avg: <strong>${avg} pts/sprint</strong> · ${data.length} sprints tracked</div>
+        <div class="vel-avg-row">Avg: <strong>${avg} pts/sprint</strong> Ã‚Â· ${data.length} sprints tracked</div>
         <div class="vel-sparkline-wrap">${spark}</div>
       </div>
       <div class="member-task-stats">
@@ -1190,7 +1378,7 @@ function renderMemberCards(){
   }).join('');
 }
 
-/* ── SPRINT CONFIG ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ SPRINT CONFIG Ã¢â€â‚¬Ã¢â€â‚¬ */
 function openSprintConfig(){
   document.getElementById('sc-start').value  =sprintCfg.projectStart;
   document.getElementById('sc-length').value =String(sprintCfg.sprintLength);
@@ -1207,7 +1395,7 @@ function renderSprintPreview(){
     const st=spStatus(s);
     const cls=st==='current'?'spr-current':st==='past'?'spr-past':'spr-future';
     const badge=st==='current'?'<span class="sprint-badge sb-cur">Current</span>':st==='past'?'<span class="sprint-badge sb-past">Past</span>':'<span class="sprint-badge sb-future">Upcoming</span>';
-    return `<div class="sprint-row ${cls}"><span class="sprint-num">${s.label}</span><span class="sprint-dates">${s.startDate} → ${s.endDate}</span>${badge}</div>`;
+    return `<div class="sprint-row ${cls}"><span class="sprint-num">${s.label}</span><span class="sprint-dates">${s.startDate} Ã¢â€ â€™ ${s.endDate}</span>${badge}</div>`;
   }).join('');
 }
 function saveSprintConfig(){
@@ -1215,13 +1403,12 @@ function saveSprintConfig(){
   sprintCfg.sprintLength =parseInt(document.getElementById('sc-length').value)||14;
   histRaw                =document.getElementById('sc-history').value.trim();
   saveCfg();
-  if(db) db.collection('meta').doc('sprintHistory').set({histRaw}).catch(console.error);
-  else localStorage.setItem('emr-hist',histRaw);
+  localStorage.setItem(STORAGE_KEYS.hist,histRaw);
   document.getElementById('sprint-overlay').classList.remove('open');
   renderAll();
 }
 
-/* ── MEMBER MODAL ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ MEMBER MODAL Ã¢â€â‚¬Ã¢â€â‚¬ */
 function buildAvatarPicker(){
   document.getElementById('avatar-picker').innerHTML=AVT_CLR.map(c=>`<div class="avatar-color-swatch${c===selColor?' selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join('');
 }
@@ -1235,7 +1422,7 @@ function openMemberModal(id){
   editMemberId=id||null;
   const m=id?members.find(m=>m.id===id):null;
   selColor=m?.color||AVT_CLR[Math.floor(Math.random()*AVT_CLR.length)];
-  document.getElementById('member-modal-title').textContent=m?'✏️ Edit Team Member':'➕ Add Team Member';
+  document.getElementById('member-modal-title').textContent=m?'Ã¢Å“ÂÃ¯Â¸Â Edit Team Member':'Ã¢Å¾â€¢ Add Team Member';
   document.getElementById('m-name').value  =m?.name||'';
   document.getElementById('m-role').value  =m?.role||'';
   document.getElementById('m-email').value =m?.email||'';
@@ -1253,9 +1440,10 @@ function saveMember(){
   const name=document.getElementById('m-name').value.trim(), role=document.getElementById('m-role').value.trim();
   if(!name){alert('Name is required.');return;} if(!role){alert('Role is required.');return;}
   const data={id:editMemberId||uid(),name,role,email:document.getElementById('m-email').value.trim(),phone:document.getElementById('m-phone').value.trim(),dept:document.getElementById('m-dept').value,status:document.getElementById('m-status').value,skills:document.getElementById('m-skills').value.trim(),notes:document.getElementById('m-notes').value.trim(),color:selColor};
+  const before=editMemberId?clone(members.find(m=>m.id===editMemberId)):null;
   if(editMemberId){const i=members.findIndex(m=>m.id===editMemberId);if(i>-1)members[i]=data;}else members.push(data);
-  if(db) db.collection('members').doc(data.id).set(data).catch(console.error);
-  else localStorage.setItem('emr-members',JSON.stringify(members));
+  saveMembers();
+  recordEvent('member',data.id,editMemberId?'updated':'created',before,data);
   closeMemberModal();renderAll();
 }
 function deleteMember(){
@@ -1264,16 +1452,10 @@ function deleteMember(){
   if(!confirm(`Remove ${m?.name||'this member'} from the team? Their tasks will become unassigned.`))return;
   const affected=tasks.filter(t=>t.assignee===m?.name);
   affected.forEach(t=>t.assignee='');
-  if(db){
-    const batch=db.batch();
-    affected.forEach(t=>batch.update(db.collection('tasks').doc(t.id),{assignee:''}));
-    batch.delete(db.collection('members').doc(editMemberId));
-    batch.commit().catch(console.error);
-  } else {
-    localStorage.setItem('emr-tasks',JSON.stringify(tasks));
-    localStorage.setItem('emr-members',JSON.stringify(members.filter(m=>m.id!==editMemberId)));
-  }
+  save();
+  recordEvent('member',editMemberId,'deleted',m,null,{unassignedTasks:affected.map(t=>t.id)});
   members=members.filter(m=>m.id!==editMemberId);
+  saveMembers();
   closeMemberModal();renderAll();
 }
 function confirmDeleteMember(id){
@@ -1281,24 +1463,19 @@ function confirmDeleteMember(id){
   if(!confirm(`Remove ${m.name} from the team? Their tasks will become unassigned.`))return;
   const affected=tasks.filter(t=>t.assignee===m.name);
   affected.forEach(t=>t.assignee='');
-  if(db){
-    const batch=db.batch();
-    affected.forEach(t=>batch.update(db.collection('tasks').doc(t.id),{assignee:''}));
-    batch.delete(db.collection('members').doc(id));
-    batch.commit().catch(console.error);
-  } else {
-    localStorage.setItem('emr-tasks',JSON.stringify(tasks));
-    localStorage.setItem('emr-members',JSON.stringify(members.filter(mx=>mx.id!==id)));
-  }
-  members=members.filter(mx=>mx.id!==id);renderAll();
+  save();
+  recordEvent('member',id,'deleted',m,null,{unassignedTasks:affected.map(t=>t.id)});
+  members=members.filter(mx=>mx.id!==id);
+  saveMembers();
+  renderAll();
 }
 
-/* ── TASK MODAL ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ TASK MODAL Ã¢â€â‚¬Ã¢â€â‚¬ */
 let commentBuffer=[];
 function openModal(id){
   editId=id||null;commentBuffer=[];
   const t=id?tasks.find(t=>t.id===id):null;
-  document.getElementById('modal-title-text').textContent=t?'✏️ Edit Task':'➕ New Task';
+  document.getElementById('modal-title-text').textContent=t?'Ã¢Å“ÂÃ¯Â¸Â Edit Task':'Ã¢Å¾â€¢ New Task';
   document.getElementById('f-title').value   =t?.title||'';
   document.getElementById('f-desc').value    =t?.desc||'';
   document.getElementById('f-module').value  =t?.module||'Patient Registration';
@@ -1306,9 +1483,18 @@ function openModal(id){
   document.getElementById('f-priority').value=t?.priority||'Medium';
   document.getElementById('f-due').value     =t?.due||'';
   document.getElementById('f-progress').value=t?.progress||0;
+  document.getElementById('f-risk').value    =t?.riskLevel||'medium';
+  document.getElementById('f-agent-status').value=t?.agentStatus||'not_requested';
+  document.getElementById('f-environment').value=t?.environment||'';
+  document.getElementById('f-repo').value=t?.repoUrl||'';
+  document.getElementById('f-pr').value=t?.prUrl||'';
+  document.getElementById('f-next-action').value=t?.nextAction||'';
+  document.getElementById('f-blocked-reason').value=t?.blockedReason||'';
+  document.getElementById('f-dod').value=t?.definitionOfDone||'';
   document.getElementById('f-notes').value   =t?.notes||'';
   document.getElementById('f-sp').value      =String(t?.storyPoints||0);
   document.getElementById('delete-btn').style.display=t?'block':'none';
+  document.getElementById('queue-agent-btn').style.display=t?'block':'none';
   populateProjectSelect();
   const psel=document.getElementById('f-project');
   psel.value=t?.projectId||activeProjectId||'';
@@ -1316,6 +1502,10 @@ function openModal(id){
   const asel=document.getElementById('f-assignee');
   if(t?.assignee){const ex=[...asel.options].some(o=>o.value===t.assignee);if(!ex){const o=document.createElement('option');o.value=o.textContent=t.assignee;asel.appendChild(o);}asel.value=t.assignee;}
   else asel.value='';
+  populateReviewerSelect();
+  const rsel=document.getElementById('f-reviewer');
+  if(t?.reviewer){const ex=[...rsel.options].some(o=>o.value===t.reviewer);if(!ex){const o=document.createElement('option');o.value=o.textContent=t.reviewer;rsel.appendChild(o);}rsel.value=t.reviewer;}
+  else rsel.value='';
   populateSprintSelect();
   const ssel=document.getElementById('f-sprint');
   if(t?.sprintId){const ex=[...ssel.options].some(o=>o.value===t.sprintId);if(!ex){const o=document.createElement('option');o.value=t.sprintId;o.textContent=t.sprintId;ssel.appendChild(o);}ssel.value=t.sprintId;}
@@ -1333,38 +1523,72 @@ function closeModal(){document.getElementById('task-overlay').classList.remove('
 function saveTask(){
   const title=document.getElementById('f-title').value.trim();
   if(!title){alert('Task title is required.');return;}
-  const data={
+  const before=editId?clone(tasks.find(t=>t.id===editId)):null;
+  const data=normalizeTask({
     id:editId||uid(),title,
     desc:    document.getElementById('f-desc').value.trim(),
     module:  document.getElementById('f-module').value,
     status:  document.getElementById('f-status').value,
     priority:document.getElementById('f-priority').value,
     assignee:document.getElementById('f-assignee').value||'',
+    reviewer:document.getElementById('f-reviewer').value||'',
     due:     document.getElementById('f-due').value,
     progress:parseInt(document.getElementById('f-progress').value)||0,
+    riskLevel:document.getElementById('f-risk').value,
+    agentStatus:document.getElementById('f-agent-status').value,
+    environment:document.getElementById('f-environment').value.trim(),
+    repoUrl:document.getElementById('f-repo').value.trim(),
+    prUrl:document.getElementById('f-pr').value.trim(),
+    nextAction:document.getElementById('f-next-action').value.trim(),
+    blockedReason:document.getElementById('f-blocked-reason').value.trim(),
+    definitionOfDone:document.getElementById('f-dod').value.trim(),
     notes:   document.getElementById('f-notes').value.trim(),
     storyPoints:parseInt(document.getElementById('f-sp').value)||0,
     sprintId:   document.getElementById('f-sprint').value||'',
     projectId:  document.getElementById('f-project').value||'',
     blockedBy:  depBuffer,
     comments:commentBuffer,
-  };
+  });
   if(editId){const i=tasks.findIndex(t=>t.id===editId);if(i>-1)tasks[i]=data;}else tasks.push(data);
-  save();closeModal();renderAll();
+  save();
+  recordEvent('task',data.id,editId?'updated':'created',before,data,{status:data.status,agentStatus:data.agentStatus});
+  closeModal();renderAll();
 }
 function deleteTask(){
   if(!editId)return;
   if(!confirm('Delete this task? This cannot be undone.'))return;
-  tasks=tasks.filter(t=>t.id!==editId);save();closeModal();renderAll();
+  const before=clone(tasks.find(t=>t.id===editId));
+  tasks=tasks.filter(t=>t.id!==editId).map(t=>({...t,blockedBy:(t.blockedBy||[]).filter(id=>id!==editId)}));
+  save();
+  recordEvent('task',editId,'deleted',before,null,{cleanedDependencies:true});
+  closeModal();renderAll();
 }
 function addComment(){
   const inp=document.getElementById('comment-input'),txt=inp.value.trim();if(!txt)return;
   commentBuffer.push({user:currentUser,text:txt,date:new Date().toISOString().slice(0,10)});
+  if(editId) recordEvent('task',editId,'commented',null,{text:txt},{source:'comment'});
   inp.value='';renderComments();
 }
 function renderComments(){
   const list=document.getElementById('comments-list');
-  list.innerHTML=commentBuffer.map(c=>`<div class="comment"><div class="comment-meta">👤 <strong>${c.user}</strong> · ${c.date}</div>${c.text}</div>`).join('')||'<div style="color:var(--muted);font-size:.8rem">No comments yet.</div>';
+  const activity=(editId?events.filter(e=>e.entityType==='task'&&e.entityId===editId&&e.action!=='commented').slice(0,6):[]);
+  list.innerHTML=[
+    ...activity.map(e=>`<div class="comment activity-event"><div class="comment-meta">${esc(e.actorName||'System')} Ã‚Â· ${new Date(e.createdAt).toLocaleString()}</div>${esc((e.action||'updated').toUpperCase())}${e.metadata?.status?` Ã‚Â· status ${esc(e.metadata.status)}`:''}${e.metadata?.agentStatus?` Ã‚Â· agent ${esc(e.metadata.agentStatus)}`:''}</div>`),
+    ...commentBuffer.map(c=>`<div class="comment"><div class="comment-meta">Ã°Å¸â€˜Â¤ <strong>${esc(c.user)}</strong> Ã‚Â· ${esc(c.date)}</div>${esc(c.text)}</div>`)
+  ].join('')||'<div style="color:var(--muted);font-size:.8rem">No activity yet.</div>';
+}
+function queueAgentRun(){
+  if(!editId)return;
+  const task=tasks.find(t=>t.id===editId);
+  if(!task)return;
+  const runType=task.status==='testing'?'reviewer':task.status==='ready'?'executor':'planner';
+  const run=recordAgentRun(task,runType,`Queued ${runType} run for ${task.title}`);
+  task.agentStatus='queued';
+  task.agentOwner=runType;
+  task.lastAgentSummary=`Queued by ${currentUser} on ${new Date(run.createdAt).toLocaleString()}`;
+  save();
+  recordEvent('task',task.id,'updated',null,task,{agentStatus:'queued',runId:run.id});
+  openModal(task.id);
 }
 function closeOnOverlay(e){if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');}
 function clearFilters(){
@@ -1376,14 +1600,14 @@ function clearFilters(){
 function changeUser(){document.getElementById('user-input').value=currentUser;document.getElementById('user-overlay').classList.add('open');}
 function setUser(){
   const v=document.getElementById('user-input').value.trim();if(!v)return;
-  currentUser=v;localStorage.setItem('emr-user',currentUser);
+  currentUser=v;localStorage.setItem(STORAGE_KEYS.user,currentUser);
   document.getElementById('current-user').textContent='Dev: '+currentUser;
   document.getElementById('user-overlay').classList.remove('open');
 }
 
-/* ══════════════════════════════════════════════
-   FEATURE 1 — DRAG & DROP
-══════════════════════════════════════════════ */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   FEATURE 1 Ã¢â‚¬â€ DRAG & DROP
+Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 let dragTaskId=null;
 function cardDragStart(e,id){
   dragTaskId=id;
@@ -1407,9 +1631,12 @@ function colDrop(e,status){
   const id=e.dataTransfer.getData('text/plain')||dragTaskId;
   const t=tasks.find(t=>t.id===id);
   if(t&&t.status!==status){
+    const before=clone(t);
     t.status=status;
     if(status==='done') t.progress=100;
+    if(status==='testing'&&t.agentStatus==='queued') t.agentStatus='running';
     save(); renderAll();
+    recordEvent('task',t.id,'moved',before,t,{fromStatus:before.status,toStatus:status});
     // Flash confirmation
     setTimeout(()=>{
       const card=document.querySelector(`[ondragstart*="${id}"]`);
@@ -1420,9 +1647,9 @@ function colDrop(e,status){
   dragTaskId=null;
 }
 
-/* ══════════════════════════════════════════════
-   FEATURE 2 — SPRINT VELOCITY PDF EXPORT
-══════════════════════════════════════════════ */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   FEATURE 2 Ã¢â‚¬â€ SPRINT VELOCITY PDF EXPORT
+Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 function exportVelocityPDF(){
   const sps=genSprints(), cs=curSprint(sps);
   const past=sps.filter(s=>spStatus(s)==='past').slice(-5);
@@ -1440,7 +1667,7 @@ function exportVelocityPDF(){
     const trend=velTrend(sd);
     rows+=`<tr>
       <td style="font-weight:600">${m.name}<br><span style="font-weight:400;font-size:11px;color:#666">${m.role}</span></td>
-      ${sd.map(d=>`<td style="text-align:center;${d.status==='current'?'font-weight:700;color:#1a56db':''}">${d.pts||'—'}</td>`).join('')}
+      ${sd.map(d=>`<td style="text-align:center;${d.status==='current'?'font-weight:700;color:#1a56db':''}">${d.pts||'Ã¢â‚¬â€'}</td>`).join('')}
       <td style="text-align:center;font-weight:700">${avg}</td>
       <td style="text-align:center;color:${trend.cls==='trend-up'?'#0a7c42':trend.cls==='trend-dn'?'#c0392b':'#888'}">${trend.icon}</td>
     </tr>`;
@@ -1448,7 +1675,7 @@ function exportVelocityPDF(){
   const teamAvg=velAvg(shown.map((s,i)=>({pts:totals[i],status:spStatus(s)})));
   const teamTrend=velTrend(shown.map((s,i)=>({pts:totals[i],status:spStatus(s)})));
   rows+=`<tr style="background:#f0f4ff;font-weight:700">
-    <td>🏆 Team Total</td>
+    <td>Ã°Å¸Ââ€  Team Total</td>
     ${totals.map((p,i)=>`<td style="text-align:center;${shown[i]?.id===cs?.id?'font-weight:800;color:#1a56db':''}">${p}</td>`).join('')}
     <td style="text-align:center">${teamAvg}</td>
     <td style="text-align:center;color:${teamTrend.cls==='trend-up'?'#0a7c42':teamTrend.cls==='trend-dn'?'#c0392b':'#888'}">${teamTrend.icon}</td>
@@ -1470,24 +1697,24 @@ function exportVelocityPDF(){
     .meta-item{font-size:12px;color:#555;} .meta-item strong{display:block;color:#111;font-size:14px;margin-bottom:2px;}
     @media print{body{padding:20px;}@page{margin:1.5cm;size:A4 landscape;}}
   </style></head><body>
-  <h1>⚡ Sprint Velocity Report</h1>
-  <div class="subtitle">HealthForceHub PM · Exported ${now}${proj?' · Project: '+proj.name:''}</div>
+  <h1>Ã¢Å¡Â¡ Sprint Velocity Report</h1>
+  <div class="subtitle">HealthForceHub PM Ã‚Â· Exported ${now}${proj?' Ã‚Â· Project: '+proj.name:''}</div>
   <div class="meta">
     <div class="meta-item"><strong>${members.length}</strong> Team Members</div>
     <div class="meta-item"><strong>${shown.length}</strong> Sprints Shown</div>
-    ${cs?`<div class="meta-item"><strong>${cs.label} (Current)</strong>${cs.startDate} → ${cs.endDate}</div>`:''}
+    ${cs?`<div class="meta-item"><strong>${cs.label} (Current)</strong>${cs.startDate} Ã¢â€ â€™ ${cs.endDate}</div>`:''}
     <div class="meta-item"><strong>${teamAvg} pts</strong> Team Avg / Sprint</div>
   </div>
   <table>
     <thead><tr>
       <th>Team Member</th>
-      ${shown.map(s=>`<th class="${s.id===cs?.id?'current-col':''}" style="text-align:center">${s.label}${s.id===cs?.id?' ★':''}</th>`).join('')}
+      ${shown.map(s=>`<th class="${s.id===cs?.id?'current-col':''}" style="text-align:center">${s.label}${s.id===cs?.id?' Ã¢Ëœâ€¦':''}</th>`).join('')}
       <th style="text-align:center">Avg</th><th style="text-align:center">Trend</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>
   <div style="margin-top:28px;font-size:11px;color:#999;border-top:1px solid #e5e7eb;padding-top:12px;">
-    Generated by HealthForceHub PM · ${now} · Velocity = Story Points completed (status: Done) per sprint
+    Generated by HealthForceHub PM Ã‚Â· ${now} Ã‚Â· Velocity = Story Points completed (status: Done) per sprint
   </div>
   <script>window.onload=()=>window.print();<\/script>
   </body></html>`;
@@ -1497,9 +1724,9 @@ function exportVelocityPDF(){
   w.document.close();
 }
 
-/* ══════════════════════════════════════════════
-   FEATURE 3 — TASK DEPENDENCIES
-══════════════════════════════════════════════ */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   FEATURE 3 Ã¢â‚¬â€ TASK DEPENDENCIES
+Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 let depBuffer=[];
 
 function isBlocked(task){
@@ -1512,8 +1739,8 @@ function isBlocked(task){
 function populateDepSelect(){
   const sel=document.getElementById('dep-select'); if(!sel) return;
   const eligible=tasks.filter(t=>t.id!==editId && !(depBuffer.includes(t.id)));
-  sel.innerHTML='<option value="">— Add blocker task —</option>'+
-    eligible.map(t=>`<option value="${t.id}">[${STAT_LBL[t.status]}] ${t.title.length>55?t.title.slice(0,55)+'…':t.title}</option>`).join('');
+  sel.innerHTML='<option value="">Ã¢â‚¬â€ Add blocker task Ã¢â‚¬â€</option>'+
+    eligible.map(t=>`<option value="${t.id}">[${STAT_LBL[t.status]}] ${t.title.length>55?t.title.slice(0,55)+'Ã¢â‚¬Â¦':t.title}</option>`).join('');
 }
 
 function addBlocker(){
@@ -1544,7 +1771,7 @@ function renderDepList(){
         <div class="dep-status-dot" style="background:${statusDotColor[bt.status]||'#888'}"></div>
         <span class="dep-item-title" style="${resolved?'text-decoration:line-through;opacity:.5':''}">${bt.title}</span>
         <span class="tag status-${bt.status}" style="flex-shrink:0">${STAT_LBL[bt.status]}</span>
-        <button class="dep-remove" onclick="removeBlocker('${bid}')" title="Remove">✕</button>
+        <button class="dep-remove" onclick="removeBlocker('${bid}')" title="Remove">Ã¢Å“â€¢</button>
       </div>`;
     }).join('');
   }
@@ -1555,16 +1782,16 @@ function renderDepList(){
     :'';
 }
 
-/* ══════════════════════════════════════════════
-   FEATURE 4 — PROJECT BURNDOWN CHART
-══════════════════════════════════════════════ */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   FEATURE 4 Ã¢â‚¬â€ PROJECT BURNDOWN CHART
+Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 function renderBurndown(){
   const sec=document.getElementById('burndown-section'); if(!sec) return;
   const proj=activeProjectId?projects.find(p=>p.id===activeProjectId):null;
   if(!proj){ sec.innerHTML=''; return; }
 
   const projTasks=tasks.filter(t=>t.projectId===proj.id&&(parseInt(t.storyPoints)||0)>0);
-  if(!projTasks.length){ sec.innerHTML=`<div class="burndown-section"><h3>🔥 Burndown — ${proj.name}</h3><div style="color:var(--muted);font-size:.85rem;padding:12px 0">No pointed tasks found for this project.</div></div>`; return; }
+  if(!projTasks.length){ sec.innerHTML=`<div class="burndown-section"><h3>Ã°Å¸â€Â¥ Burndown Ã¢â‚¬â€ ${proj.name}</h3><div style="color:var(--muted);font-size:.85rem;padding:12px 0">No pointed tasks found for this project.</div></div>`; return; }
 
   const sps=genSprints(2);
   const cs=curSprint(sps);
@@ -1627,7 +1854,7 @@ function renderBurndown(){
 
   sec.innerHTML=`<div class="burndown-section">
     <div class="burndown-header">
-      <h3>🔥 Burndown · <span style="color:${proj.color}">${proj.icon} ${proj.name}</span></h3>
+      <h3>Ã°Å¸â€Â¥ Burndown Ã‚Â· <span style="color:${proj.color}">${proj.icon} ${proj.name}</span></h3>
       <div class="burndown-legend">
         <span><span class="legend-dot" style="background:#2e3350;border:1px dashed #7b82a8"></span>Ideal</span>
         <span><span class="legend-dot" style="background:#7c6af7"></span>Actual</span>
@@ -1650,62 +1877,71 @@ function renderBurndown(){
   </div>`;
 }
 
+function openSystemModal(){
+  renderSystemModal();
+  document.getElementById('system-overlay').classList.add('open');
+}
+function closeSystemModal(){document.getElementById('system-overlay').classList.remove('open');}
+function renderSystemModal(){
+  const recentEvents=events.slice(0,3).map(e=>`- ${e.action} ${e.entityType} ${e.entityId} @ ${new Date(e.createdAt).toLocaleString()}`).join('\n') || '- No events yet';
+  document.getElementById('system-summary').innerHTML=`
+    <div class="mini-grid">
+      <div class="mini-stat"><div class="mini-stat-label">Tasks</div><div class="mini-stat-value">${tasks.length}</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Projects</div><div class="mini-stat-value">${projects.length}</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Events</div><div class="mini-stat-value">${events.length}</div></div>
+      <div class="mini-stat"><div class="mini-stat-label">Agent Runs</div><div class="mini-stat-value">${agentRuns.length}</div></div>
+    </div>`;
+  document.getElementById('system-storage-map').textContent=`Local cache keys
+${STORAGE_KEYS.tasks} -> tasks
+${STORAGE_KEYS.projects} -> projects
+${STORAGE_KEYS.members} -> users/members
+${STORAGE_KEYS.events} -> events
+${STORAGE_KEYS.agentRuns} -> agent_runs
+
+Next Supabase sync path
+tasks -> tasks + task_briefs
+projects -> projects + project_contexts
+comments -> task_comments
+activity -> events
+agent queue -> agent_runs`;
+  document.getElementById('system-recent-events').textContent=recentEvents;
+}
+
 document.getElementById('current-user').textContent='Dev: '+currentUser;
-renderAll();
+if(typeof supabase !== 'undefined'){
+  loadData();
+} else {
+  loadLocal();
+  setDbStatus('local','Local');
+  renderAll();
+}
 </script>
-<!-- FIREBASE LOADING OVERLAY -->
-<div id="fb-loading">
-  <div class="fb-spinner"></div>
-  <div class="fb-loading-msg" id="fb-loading-msg">Connecting to Firebase…</div>
+<!-- DATA LAYER OVERLAY -->
+<div id="data-loading">
+  <div class="data-spinner"></div>
+  <div class="data-loading-msg">Preparing local workspace...</div>
 </div>
 
-<!-- FIREBASE SETUP MODAL -->
-<div class="overlay" id="fb-setup-overlay" onclick="closeOnOverlay(event)">
+<!-- SYSTEM MODAL -->
+<div class="overlay" id="system-overlay" onclick="closeOnOverlay(event)">
   <div class="modal" style="width:560px">
     <div class="modal-header">
-      <div class="modal-title">🔥 Firebase Configuration</div>
-      <button class="modal-close" onclick="closeFbSetup()">✕</button>
+      <div class="modal-title">Data Layer Overview</div>
+      <button class="modal-close" onclick="closeSystemModal()">Close</button>
     </div>
     <div class="modal-body">
-      <div id="fb-current-mode-banner"></div>
-      <div class="fb-setup-steps">
-        <div class="fb-step"><div class="fb-step-num">1</div><div>Go to <strong>console.firebase.google.com</strong> → Create a project (or open an existing one)</div></div>
-        <div class="fb-step"><div class="fb-step-num">2</div><div>Click <strong>Firestore Database</strong> → Create database → Start in <em>test mode</em> (you can tighten rules later)</div></div>
-        <div class="fb-step"><div class="fb-step-num">3</div><div>Click <strong>Authentication</strong> → Sign-in method → Enable <strong>Anonymous</strong></div></div>
-        <div class="fb-step"><div class="fb-step-num">4</div><div>Go to <strong>Project Settings</strong> (gear icon) → Your apps → Add app → Web → Register → copy the <code style="color:var(--accent)">firebaseConfig</code> object</div></div>
-        <div class="fb-step"><div class="fb-step-num">5</div><div>Paste the full config JSON below and click <strong>Connect</strong></div></div>
+      <div class="data-mode-banner">Local-first cache active. Supabase is the target source of truth.</div>
+      <div id="system-summary"></div>
+      <div class="data-setup-steps">
+        <div class="data-step"><div class="data-step-num">1</div><div>Keep working locally while the schema stabilizes.</div></div>
+        <div class="data-step"><div class="data-step-num">2</div><div>Persist PM entities into tasks, projects, task_briefs, project_contexts, events, and agent_runs in Supabase.</div></div>
+        <div class="data-step"><div class="data-step-num">3</div><div>Replay the local event log into Supabase first, then backfill task comments and agent runs.</div></div>
       </div>
-      <div class="form-group">
-        <label>Firebase Config JSON</label>
-        <textarea class="fb-config-input" id="fb-config-input" placeholder='{
-  "apiKey": "AIza...",
-  "authDomain": "your-app.firebaseapp.com",
-  "projectId": "your-app",
-  "storageBucket": "your-app.appspot.com",
-  "messagingSenderId": "123456789",
-  "appId": "1:123456789:web:abc123"
-}'></textarea>
-      </div>
-      <div class="info-box" style="margin-top:0">
-        <strong>Firestore Security Rules</strong> — paste these in Firebase Console → Firestore → Rules:<br>
-        <code style="color:var(--accent);font-size:.76rem;display:block;margin-top:6px;line-height:1.8">
-          rules_version = '2';<br>
-          service cloud.firestore {<br>
-          &nbsp;&nbsp;match /databases/{database}/documents {<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;match /{document=**} {<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read, write: if request.auth != null;<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;}<br>
-          &nbsp;&nbsp;}<br>
-          }
-        </code>
-      </div>
+      <div class="form-group"><label>Storage Mapping</label><div class="data-pre" id="system-storage-map"></div></div>
+      <div class="form-group"><label>Recent Events</label><div class="data-pre" id="system-recent-events"></div></div>
     </div>
-    <div class="modal-footer" style="justify-content:space-between">
-      <button class="btn btn-secondary btn-sm" onclick="disconnectFirebase()">Use Local Storage</button>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-secondary" onclick="closeFbSetup()">Cancel</button>
-        <button class="btn btn-primary" onclick="connectFirebase()">🔥 Connect to Firebase</button>
-      </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeSystemModal()">Close</button>
     </div>
   </div>
 </div>

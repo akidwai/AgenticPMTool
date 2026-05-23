@@ -1,48 +1,126 @@
-# ARCHITECTURE — HealthForceHub PM
+# ARCHITECTURE - HealthForceHub PM
 
 ## Stack Decision: Single HTML File
-**Decision:** Entire app lives in one `healthforcehub-pm.html` file — inline CSS, inline JS, no build system.
+Decision:
+The operational UI stays in one `healthforcehub-pm.html` file with inline CSS and inline JavaScript.
 
-**Why:** Zero setup friction for a small healthcare dev team. The PM tool should never block work; it needs to open instantly, travel with the project, and require no npm install, no Node version, no bundler. The complexity ceiling for this tool doesn't justify a framework.
+Why:
+- Zero setup friction for the internal team
+- Opens immediately from disk or a static server
+- No npm, bundler, or framework maintenance burden
+- Fits the current scale of the product
 
-**Trade-off accepted:** No component isolation, no TypeScript, no hot reload. Manual discipline required to keep the file organized.
+Accepted trade-off:
+- Manual organization discipline is required
+- No component isolation
+- No type system inside the browser app
+- Large-file maintenance gets harder as features grow
 
-## Persistence: Firebase + localStorage Dual-Mode
-**Decision:** Firebase Firestore is the cloud layer; localStorage is the offline fallback. The app auto-detects mode.
+## Persistence Strategy: Local-First, Supabase-Target
+Decision:
+The browser app currently operates local-first using `localStorage`, but the system-of-record design is Supabase.
 
-**Why:** Teams working locally (or without a Firebase config) get a fully functional tool. When cloud sync is needed (multi-device, multi-person), a Firebase project can be wired in via the UI without changing any code. The `fb-status` indicator in the header shows the current mode.
+Why:
+- The team can keep using the PM tool immediately while the backend settles
+- Data model changes can be tested locally without blocking frontend work
+- The local browser model now mirrors the direction of the Supabase schema more closely than the older Firebase design did
 
-**Mode switching:** Pasting a Firebase config JSON into the setup modal initializes Firestore listeners. Removing config drops back to localStorage. No data migration tooling — data lives in whichever store was active.
+Current local keys:
+- `emr-tasks`
+- `emr-members`
+- `emr-projects`
+- `emr-scfg`
+- `emr-hist`
+- `emr-user`
+- `emr-events`
+- `emr-agent-runs`
 
-**Firebase collections:** `tasks`, `members`, `projects`, `meta` (sprint config + sprint history docs).
+Planned Supabase mapping:
+- local tasks -> `tasks` + `task_briefs`
+- local projects -> `projects` + `project_contexts`
+- local comments -> `task_comments`
+- local events -> `events`
+- local agent queue / history -> `agent_runs`
 
-**localStorage keys:**
-- `emr-tasks` — serialized task array
-- `emr-members` — serialized member array
-- `emr-projects` — serialized project array
-- `emr-scfg` — sprint config object `{projectStart, sprintLength}`
-- `emr-hist` — raw velocity history override text
-- `emr-user` — current user name string
+## Data Model Direction
+Decision:
+The product should store more than board state. It should store execution context, operating memory, and historical change data.
 
-## Sprint Engine
-**Decision:** Sprints are computed, not stored. Given a `projectStart` date and `sprintLength` (days), all sprint labels are generated at runtime.
+That means the architecture is built around four layers:
+1. Current state
+   Tasks, projects, members, sprint assignments, statuses
+2. Structured execution context
+   Reviewer, next action, blocked reason, definition of done, risk level, environment, repo/PR links, agent status
+3. Append-only history
+   Events for create/update/move/comment/delete and future workflow transitions
+4. Agent execution record
+   Agent runs, tool calls, and workflow runs
 
-**Why:** Avoids a sprints collection that needs to be kept in sync. Changing the project start date regenerates all sprint labels. Task `sprintId` values (`sprint-1`, `sprint-2`, …) remain valid because they're based on sprint number, not date.
+## Browser App Runtime Model
+All views still render from in-memory arrays and re-render via `renderAll()`.
 
-**Trade-off:** Historical velocity overrides are stored as raw text (`Alex Chen: 8, 13, 10, 15`) and assigned to the earliest past sprints positionally. If sprint count changes, override assignments can shift.
+Why this is still acceptable:
+- Task volume is small
+- Single internal team
+- Simplicity is worth more than frontend abstraction right now
 
-## Velocity Engine
-Velocity is computed per-member per-sprint by summing `storyPoints` of `done` tasks. Past sprints with zero task-derived velocity fall back to the historical override text (for pre-system sprints). Sparkline SVGs are rendered inline as raw SVG strings.
+Important change from older design:
+The browser app now includes agent-aware task fields, local event logging, and local agent run tracking. It is no longer just a kanban surface.
 
-## Rendering
-All views (Kanban board, list, stats, team) re-render from the in-memory `tasks`/`members`/`projects` arrays on every state change via `renderAll()`. No virtual DOM, no diffing — full DOM replacement on each call.
+## Sprint Model
+Current browser behavior:
+- Sprints are still computed from a start date and fixed sprint length
+- Historical velocity overrides remain stored as raw text
 
-**Why acceptable:** The dataset is small (tens to low hundreds of tasks). DOM replacement is instantaneous at this scale.
+Backend target:
+- Supabase stores `sprints` explicitly
 
-## Firebase SDK
-Loaded from Google CDN (firebase-app-compat, firebase-firestore-compat, firebase-auth-compat, v9.22.2). Compat layer used (not modular) to keep the single-file pattern viable without a bundler.
+Why the split exists:
+- Computed sprints are fast and lightweight in the current HTML app
+- Stored sprints are safer for analytics, auditability, and long-term historical integrity
 
-## No Authentication (Current)
-The "Switch Developer" button is a name picker stored in localStorage — not real auth. Firebase Auth is imported but not yet wired to login gates.
+## Event-Centric Design
+Decision:
+Events are a first-class system concept, not an optional audit trail.
 
-**Why:** Internal tool used by a known small team. Auth adds friction with no current security benefit. This should be revisited before any external/client-facing use.
+Why:
+- Agents need timelines, not only snapshots
+- Product operations benefit from append-only history
+- Blockers, moves, comments, and workflow changes become queryable later in Supabase
+
+Current browser behavior:
+- The app records local events for task/member/project changes and agent queueing
+
+Backend target:
+- Supabase `events` becomes the durable timeline and replay source
+
+## Agentic Design Assumptions
+The PM system assumes future agent participation in planning and delivery, including:
+- Planning or triage runs
+- Execution-oriented runs
+- Review or QA-oriented runs
+- Workflow-triggered runs
+
+A task therefore needs separate human-delivery and agent-delivery signals.
+
+Examples:
+- Task status may be `inprogress`
+- Agent status may independently be `queued`, `running`, `needs_human`, or `failed`
+
+## Security / Auth Position
+Current UI:
+- Still internal-use oriented
+- "Switch Developer" remains a lightweight local identity picker
+- No auth gate has been added in the browser app
+
+Backend position:
+- Supabase schema is prepared for authenticated use and row-level security
+- The data model is ready for stronger auth later
+- The UI intentionally avoids friction until the team actually needs it
+
+## Near-Term Integration Path
+1. Keep local-first browser usage working.
+2. Add Supabase read/write adapters for tasks, task briefs, events, and agent runs.
+3. Replay local events into Supabase.
+4. Gradually move analytics and history views to backend-backed data.
+5. Preserve the single-file UI unless the codebase becomes meaningfully harder to maintain than a split version.
