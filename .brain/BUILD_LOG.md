@@ -78,3 +78,23 @@ Updated the `.brain/` memory layer to reflect the newer design direction now rep
 
 **Reason for update:**
 The previous brain docs still described a Firebase/localStorage dual-mode board. That no longer matched the current design. The brain layer now reflects the actual intended system shape so future contributors and agents inherit the right mental model.
+
+---
+
+## 2026-05-26 - TLS helper updated to support `.env` certificate config
+
+**Agent:** Codex (GPT-5)
+
+Improved the Node-side Supabase connectivity scripts so SSL proxy/corporate certificate fixes can be configured once in a local `.env` file instead of requiring manual PowerShell environment setup every session.
+
+**Files changed:**
+- `supabase_tls.mjs`
+- `.env.example`
+
+**What changed:**
+- Added a small built-in `.env` loader with no new dependencies
+- `HFH_CA_CERT_PATH`, `NODE_EXTRA_CA_CERTS`, and `HFH_ALLOW_INSECURE_SSL` can now be read from `.env`
+- Added `.env.example` showing the expected PEM certificate path format
+
+**Reason for update:**
+The runtime error "Unable to connect to API: SSL certificate verification failed" was being caused by Node not trusting a corporate/intercepting CA. This change makes the fix persistent and easier for local developers to apply safely.
