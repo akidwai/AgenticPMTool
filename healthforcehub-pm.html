@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthForceHub PM — EMR Project Board</title>
+<title>HealthForceHub PM - Project Workspace</title>
+<meta name="description" content="HealthForceHub PM is a lightweight project workspace for tracking EMR platform work, client integrations, sprint progress, and team ownership.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1d27'/%3E%3Cpath d='M32 14v36M14 32h36' stroke='%234f8ef7' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
   :root {
     --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3350;
@@ -275,11 +277,11 @@
 </head>
 <body>
 <header>
-  <div class="logo"><div class="logo-icon">⚕️</div>HealthForceHub PM<span style="font-size:.7rem;color:var(--muted);font-weight:400;margin-left:4px">EMR Build Board</span></div>
+  <div class="logo"><div class="logo-icon">+</div>HealthForceHub PM<span style="font-size:.7rem;color:var(--muted);font-weight:400;margin-left:4px">Project Workspace</span></div>
   <div class="header-actions">
-    <div class="fb-status" onclick="openFbSetup()" id="fb-status-btn" title="Firebase status — click to configure">
-      <div class="fb-status-dot fb-local" id="fb-status-dot"></div>
-      <span id="fb-status-label">Local</span>
+    <div class="fb-status" onclick="openSystemModal()" id="storage-status-btn" title="Storage mode overview">
+      <div class="fb-status-dot fb-local" id="storage-status-dot"></div>
+      <span id="storage-status-label">Connecting...</span>
     </div>
     <div class="active-project-pill" onclick="switchTab('projects')" id="active-project-pill">
       <div class="active-project-dot" id="active-project-dot" style="background:var(--accent)"></div>
@@ -290,14 +292,14 @@
   </div>
 </header>
 <div class="tabs">
-  <div class="tab active"  onclick="switchTab('projects')">📁 Projects</div>
-  <div class="tab"         onclick="switchTab('board')">🗂 Kanban Board</div>
-  <div class="tab"         onclick="switchTab('list')">📋 List View</div>
-  <div class="tab"         onclick="switchTab('stats')">📊 Analytics</div>
-  <div class="tab"         onclick="switchTab('team')">👥 Team &amp; Velocity</div>
+  <div class="tab active"  onclick="switchTab('projects')">Projects</div>
+  <div class="tab"         onclick="switchTab('board')">Kanban Board</div>
+  <div class="tab"         onclick="switchTab('list')">List View</div>
+  <div class="tab"         onclick="switchTab('stats')">Analytics</div>
+  <div class="tab"         onclick="switchTab('team')">Team &amp; Velocity</div>
 </div>
 <div class="toolbar" id="main-toolbar">
-  <input class="search" type="text" id="search-input" placeholder="🔍  Search tasks, modules, assignees..." oninput="renderAll()">
+  <input class="search" type="text" id="search-input" placeholder="Search tasks, modules, assignees..." oninput="renderAll()">
   <select class="filter" id="filter-project" onchange="setActiveProject(this.value)">
     <option value="">All Projects</option>
   </select>
@@ -317,7 +319,7 @@
 
 <div id="projects-view">
   <div class="projects-toolbar">
-    <h2>📁 Projects <span id="project-count" class="badge-count">0</span></h2>
+    <h2>Projects <span id="project-count" class="badge-count">0</span></h2>
     <button class="btn btn-primary" onclick="openProjectModal()">+ New Project</button>
   </div>
   <div class="projects-grid" id="projects-grid"></div>
@@ -570,7 +572,7 @@ const MODULES   = ['Patient Registration','Appointments','Clinical Notes','Presc
 const MOD_CLR   = ['#4f8ef7','#22c97a','#f7c948','#f76464','#c084fc','#22d3ee','#fb923c','#7c6af7','#e879f9','#34d399'];
 const AVT_CLR   = ['#4f8ef7','#22c97a','#f7c948','#f76464','#c084fc','#22d3ee','#fb923c','#7c6af7','#e879f9','#34d399','#f472b6','#a78bfa'];
 
-let tasks=[], members=[], projects=[];
+let tasks=[], members=[], projects=[], events=[], agentRuns=[];
 let sprintCfg = JSON.parse(localStorage.getItem('emr-scfg') || 'null') || {projectStart:'2026-01-05',sprintLength:14};
 let histRaw   = localStorage.getItem('emr-hist') || '';
 let editId=null, editMemberId=null, editProjectId=null, selColor=AVT_CLR[0], selProjectColor='#4f8ef7';
@@ -587,6 +589,23 @@ const SB_URL='https://kzyjrooaehubmkrfvpob.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eWpyb29hZWh1Ym1rcmZ2cG9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Nzg2MzUsImV4cCI6MjA5NTA1NDYzNX0.IqJTSaUWSfybX8kd2UbPYfXrJsbsN_I1YPm8EPyzywo';
 let sb=null, sbMode='local', _channelActive=false;
 let _listenersActive=false;
+
+function isoNow(){return new Date().toISOString();}
+function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
+function loadJSON(key,fallback){
+  try{
+    const raw=localStorage.getItem(key);
+    return raw?JSON.parse(raw):fallback;
+  }catch(e){return fallback;}
+}
+function persistJSON(key,value){localStorage.setItem(key,JSON.stringify(value));}
+function normalizeTask(t){
+  return {
+    blockedBy:[],
+    comments:[],
+    ...t
+  };
+}
 
 /* ── SPRINT ENGINE ── */
 function genSprints(extraFuture=1){

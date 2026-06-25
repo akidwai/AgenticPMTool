@@ -61,4 +61,4 @@ Patient Registration · Appointments · Clinical Notes · Prescriptions · Billi
 5. Preserve internal-team speed: no auth gates in the UI for now, no framework, no bundler.
 
 ## Current Status
-The design has moved away from Firebase. The app is now being documented and shaped as a local-first client with a Supabase backend target. The most important architectural shift is from "board state only" to "board state plus structured memory plus event history plus agent execution history."
+The design has moved away from Firebase. The app is now being documented and shaped as a local-first client with a Supabase backend target. The most important architectural shift is from "board state only" to "board state plus structured memory plus event history plus agent execution history." The team-facing shared version is now published through GitHub Pages, with project-owner creation available directly inside the project modal.

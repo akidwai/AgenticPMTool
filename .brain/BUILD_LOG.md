@@ -122,3 +122,26 @@ Completed the project-owner workflow so a user can create a new owner while edit
 
 **Reason for update:**
 The project modal could only assign an existing owner, which forced extra context switching and broke the intended quick-entry workflow. There were also stale Firebase code paths causing the member flow to fail after the storage migration work.
+
+---
+
+## 2026-06-25 - Team-facing polish pass for shared GitHub Pages version
+
+**Agent:** Codex (GPT-5)
+
+Cleaned up the shared browser experience after publishing the project board so teammates see a more product-like workspace instead of local/dev-oriented copy.
+
+**Files changed:**
+- `healthforcehub-pm.html`
+- `AGENTS.md`
+- `.brain/OVERVIEW.md`
+
+**What changed:**
+- Updated browser metadata and title to "Project Workspace"
+- Added an inline SVG favicon
+- Replaced the old Firebase-focused header copy with storage-mode wording
+- Simplified the main tab labels and search placeholder for a cleaner shared UI
+- Restored missing local-first helper functions used during startup so the page can recover cleanly when Supabase is unavailable
+
+**Reason for update:**
+The repo had been published for team sharing, but the visible UI still carried local/dev-oriented language and a partially merged startup path. This pass makes the shared experience clearer and more stable for non-developer teammates.

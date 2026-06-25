@@ -41,4 +41,4 @@ python serve.py
 - Do not add auth gates (current team is small and internal)
 
 ## Current status
-The project board now supports inline owner creation from the project modal: users can create a new team member as an owner and assign them to a new or existing project in one flow. Local development uses `serve.py` for UTF-8/no-cache responses. Critical path remains Booking Widget (HFH API credentials -> middleware server -> Stripe webhook -> Twilio SMS -> QA -> launch).
+The project board now supports inline owner creation from the project modal: users can create a new team member as an owner and assign them to a new or existing project in one flow. The shared browser-facing experience has been cleaned up for teammates: project workspace branding, storage status copy, page metadata, and favicon are in place. Local development uses `serve.py` for UTF-8/no-cache responses, and the public share link is GitHub Pages-backed. Critical path remains Booking Widget (HFH API credentials -> middleware server -> Stripe webhook -> Twilio SMS -> QA -> launch).
