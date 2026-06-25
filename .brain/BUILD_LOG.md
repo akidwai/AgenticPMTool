@@ -98,3 +98,27 @@ Improved the Node-side Supabase connectivity scripts so SSL proxy/corporate cert
 
 **Reason for update:**
 The runtime error "Unable to connect to API: SSL certificate verification failed" was being caused by Node not trusting a corporate/intercepting CA. This change makes the fix persistent and easier for local developers to apply safely.
+
+---
+
+## 2026-06-25 - Owner creation flow added and stale Firebase code removed
+
+**Agent:** Codex (GPT-5)
+
+Completed the project-owner workflow so a user can create a new owner while editing or creating a project, then assign that owner immediately without leaving the project modal.
+
+**Files changed:**
+- `healthforcehub-pm.html`
+- `AGENTS.md`
+- `.gitignore`
+
+**What changed:**
+- Added an inline "New Owner" form inside the project modal
+- New owners are saved as team members and auto-selected as the project owner
+- Removed remaining dead Firebase `db.collection(...)` member-save/delete paths
+- Fixed the related member add/delete flows to use the current local-first save helpers
+- Added `.claude/` to `.gitignore` so local Codex app metadata stays out of git
+- Updated `AGENTS.md` so the handoff file matches the current local-first/Supabase-target architecture
+
+**Reason for update:**
+The project modal could only assign an existing owner, which forced extra context switching and broke the intended quick-entry workflow. There were also stale Firebase code paths causing the member flow to fail after the storage migration work.

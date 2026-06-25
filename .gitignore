@@ -3,3 +3,4 @@ node_modules/
 package-lock.json
 healthforcehub-pm.original.html
 rebuild.mjs
+.claude/
