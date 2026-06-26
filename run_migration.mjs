@@ -1,8 +1,8 @@
 import { readFileSync } from 'fs';
 import { createSupabaseTools } from './supabase_tls.mjs';
 
-const SB_URL = 'https://kzyjrooaehubmkrfvpob.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6eWpyb29hZWh1Ym1rcmZ2cG9iIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTQ3ODYzNSwiZXhwIjoyMDk1MDU0NjM1fQ.nX7U1ffOr4UbUw2VaZKP_Bh5fsIAXsxdCqGMS5HzhX0';
+const SB_URL = process.env.SUPABASE_URL || 'https://kzyjrooaehubmkrfvpob.supabase.co';
+const SB_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 const { fetch: apiFetch } = createSupabaseTools(SB_URL, SB_KEY);
 
