@@ -1,5 +1,17 @@
 # SCHEMA - HealthForceHub Agentic PM Tool
 
+## Active Compatibility Extension (2026-11-09)
+The deployed browser model uses text IDs (`migration_compat.sql`). The UUID design below remains a target/reference, not the active browser contract. Apply `delivery_features.sql` to extend the compatibility database without dropping data.
+
+- `tasks.delivery` JSONB: type (`epic`, `feature`, `story`, `task`), parentId, reviewer member ID, executing agent/status, objective, criteria, files, constraints, verification commands, repository/branch/commit/PR links, evidence array, review request/decision, and approval record.
+- Evidence entries: id, type, text, optional HTTP(S) URL, author and createdAt. Screenshots are linked, not uploaded.
+- Review statuses: draft, pending, approved, answered, changes_requested. Only implementation approval satisfies the browser completion gate.
+- `pm_stakeholders`: text id, profile JSONB, updated_at. Profile contains name, email, role, organization, notes, projectIds array, updatedAt and deleted tombstone.
+- Stakeholder RLS follows the existing anonymous internal board model: select, insert and update for browser roles. No browser delete grant is needed for tombstones.
+- Hierarchy trigger validates adjacent parent type, project consistency and compatible child relationships. Indexes support parent and review-status lookup.
+
+The SQL has not been applied to the live database in this session. Completion sign-off is a browser workflow rule, not a database-enforced or authenticated approval mechanism. No agent execution service or GitHub status integration is included.
+
 Full DDL: see [schema.sql](../schema.sql). Run in Supabase Dashboard > SQL Editor.
 
 This document reflects the current Supabase-first design direction, not the older Firebase/localStorage-only model.

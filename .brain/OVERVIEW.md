@@ -1,5 +1,10 @@
 # OVERVIEW - HealthForceHub PM
 
+## Implemented Release (2026-11-09)
+The single-file app now includes project stakeholders (one person across multiple projects), Project / Epic / Feature / User Story / Task hierarchy with leaf completion rollups, agent briefs with copy action, separate human assignee / executing agent / reviewer, manual repository/branch/commit/PR references, a human review inbox, and completion evidence.
+
+These features work locally. `delivery_features.sql` is an additive migration for the live text-ID compatibility schema and must be applied before shared sync for the new metadata and stakeholders is available. The updated app has not been deployed in this session. Agent execution and GitHub/CI polling remain manual.
+
 ## Product Vision
 HealthForceHub PM is a repo-native Agentic Project Management tool for a small development team building healthcare and med spa software. It is designed to do more than display tasks: it should preserve project memory, capture change history, and provide structured operating context for both humans and agents.
 

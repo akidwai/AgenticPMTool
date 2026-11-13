@@ -118,32 +118,37 @@
   .export-btn:hover{border-color:var(--accent);color:var(--accent);}
   /* BOARD */
   #board-view{padding:0 24px 24px;display:none;} #board-view.active{display:block;}
-  .board{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;min-height:600px;}
-  .column{background:var(--surface);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;}
+  .board{display:grid;grid-template-columns:repeat(6,minmax(270px,1fr));gap:12px;height:calc(100dvh - 240px);min-height:380px;overflow-x:auto;overflow-y:hidden;padding-bottom:12px;align-items:stretch;scrollbar-color:var(--border) var(--bg);}
+  .column{background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;min-height:0;min-width:0;}
   .col-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
   .col-title{font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px;}
   .col-dot{width:9px;height:9px;border-radius:50%;}
   .col-count{background:var(--surface2);border-radius:10px;padding:2px 8px;font-size:.72rem;color:var(--muted);}
-  .col-body{padding:10px;flex:1;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:76vh;}
+  .col-body{padding:6px;flex:1;min-height:0;display:flex;flex-direction:column;gap:4px;overflow-y:auto;scrollbar-width:thin;}
   .col-body.drag-over{background:rgba(79,142,247,.07);outline:2px dashed var(--accent);outline-offset:-4px;border-radius:0 0 10px 10px;}
   .col-body.drag-over .empty-col{color:var(--accent);}
   .empty-col{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.78rem;padding:20px 0;text-align:center;}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;position:relative;}
-  .card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 20px rgba(79,142,247,.12);}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:10px 10px 9px 12px;cursor:pointer;transition:border-color .15s,background .15s;position:relative;flex-shrink:0;}
+  .card:hover{border-color:var(--accent);background:var(--surface2);}
+  .card:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+  .card-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;}
+  .card-key{font-size:.64rem;color:var(--muted);letter-spacing:.3px;}
+  .card-type{font-size:.65rem;color:var(--accent);font-weight:600;}
+  .card-owner{display:flex;align-items:center;gap:5px;max-width:140px;min-width:0;}
+  .card-owner-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .card.dragging{opacity:.35;transform:rotate(1.5deg) scale(.97);box-shadow:0 8px 30px rgba(0,0,0,.4);}
   .card-priority{position:absolute;top:0;left:0;width:3px;height:100%;border-radius:10px 0 0 10px;}
   .card-module{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
-  .card-title{font-size:.84rem;font-weight:600;margin-bottom:6px;line-height:1.4;}
+  .card-title{font-size:.82rem;font-weight:600;margin-bottom:7px;line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .card-desc{font-size:.74rem;color:var(--muted);margin-bottom:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .card-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
   .tag{font-size:.66rem;padding:2px 7px;border-radius:12px;font-weight:600;}
-  .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+  .card-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;padding-top:0;font-size:.68rem;color:var(--muted);}
   .card-due{font-size:.68rem;color:var(--muted);}
   .progress-bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:7px;overflow:hidden;}
   .progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
   .sp-badge{font-size:.64rem;padding:1px 5px;background:#1a2040;border:1px solid #2e3a6a;border-radius:8px;color:#8ba4f7;font-weight:700;}
-  @media(max-width:1400px){.board{grid-template-columns:repeat(3,1fr);}}
-  @media(max-width:900px){.board{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:700px){#board-view{padding:0 12px 12px;}.board{grid-template-columns:repeat(6,minmax(260px,1fr));height:65dvh;min-height:360px;}.col-title{font-size:.75rem;}}
   /* LIST */
   #list-view{padding:0 24px 24px;display:none;} #list-view.active{display:block;}
   .list-table{width:100%;border-collapse:collapse;}
@@ -297,7 +302,14 @@
   <div class="tab"         onclick="switchTab('list')">List View</div>
   <div class="tab"         onclick="switchTab('stats')">Analytics</div>
   <div class="tab"         onclick="switchTab('team')">Team &amp; Velocity</div>
+  <div class="tab" onclick="switchTab('hierarchy')">Work Hierarchy</div>
+  <div class="tab" onclick="switchTab('stakeholders')">Stakeholders</div>
+  <div class="tab" onclick="switchTab('reviews')">Review Inbox <span id="review-count"></span></div>
 </div>
+<div id="delivery-sync" role="status" style="display:none;padding:10px 24px;color:var(--yellow)"></div>
+<div id="hierarchy-view" class="delivery-view"></div>
+<div id="stakeholders-view" class="delivery-view"></div>
+<div id="reviews-view" class="delivery-view"></div>
 <div class="toolbar" id="main-toolbar">
   <input class="search" type="text" id="search-input" placeholder="Search tasks, modules, assignees..." oninput="renderAll()">
   <select class="filter" id="filter-project" onchange="setActiveProject(this.value)">
@@ -579,7 +591,7 @@ let editId=null, editMemberId=null, editProjectId=null, selColor=AVT_CLR[0], sel
 let activeProjectId='';
 let currentUser = localStorage.getItem('emr-user') || 'Alex';
 
-// Firebase state
+// Cloud connection and local cache
 const STORAGE_KEYS = {
   tasks:'emr-tasks', members:'emr-members', projects:'emr-projects',
   sprintCfg:'emr-scfg', hist:'emr-hist', user:'emr-user',
@@ -601,9 +613,11 @@ function loadJSON(key,fallback){
 function persistJSON(key,value){localStorage.setItem(key,JSON.stringify(value));}
 function normalizeTask(t){
   return {
+    delivery:defaultDelivery(),
     blockedBy:[],
     comments:[],
-    ...t
+    ...t,
+    delivery:{...defaultDelivery(),...(t.delivery||{})}
   };
 }
 
@@ -756,14 +770,15 @@ function toDbTask(t){
     status:t.status||'backlog',priority:t.priority||'Medium',assignee:t.assignee||null,
     due_date:t.due||null,progress:t.progress||0,story_points:parseInt(t.storyPoints)||0,
     sprint_id:t.sprintId||null,project_id:t.projectId||null,notes:t.notes||null,
-    blocked_by:t.blockedBy||[],comments:t.comments||[]};
+    blocked_by:t.blockedBy||[],comments:t.comments||[],...(deliveryCloudReady?{delivery:t.delivery||defaultDelivery()}: {})};
 }
 function fromDbTask(r){
+  if(deliveryPending[r.id])return normalizeTask(clone(deliveryPending[r.id]));
   return normalizeTask({id:r.id,title:r.title,desc:r.description||'',module:r.module||'',
     status:r.status||'backlog',priority:r.priority||'Medium',assignee:r.assignee||'',
     due:r.due_date||'',progress:r.progress||0,storyPoints:r.story_points||0,
     sprintId:r.sprint_id||'',projectId:r.project_id||'',notes:r.notes||'',
-    blockedBy:r.blocked_by||[],comments:r.comments||[]});
+    blockedBy:r.blocked_by||[],comments:r.comments||[],delivery:r.delivery||defaultDelivery()});
 }
 function toDbMember(m){
   return {id:m.id,name:m.name,role:m.role||null,email:m.email||null,phone:m.phone||null,
@@ -801,15 +816,20 @@ function setupRealtime(){
   if(_channelActive||!sb)return;
   _channelActive=true;
   sb.channel('board').on('postgres_changes',{event:'*',schema:'public',table:'tasks'},()=>{
-    sb.from('tasks').select('*').then(({data})=>{if(data){tasks=data.map(fromDbTask);renderAll();}});
+    sb.from('tasks').select('*').then(({data})=>{if(data){tasks=mergeCloudTasks(data);persistJSON(STORAGE_KEYS.tasks,tasks);renderAll();}});
   }).subscribe();
 }
 /* -- SAVE (optimistic: local + async cloud) -- */
 function save(){
   localStorage.setItem(STORAGE_KEYS.tasks,JSON.stringify(tasks));
   if(sbMode==='cloud')
-    sb.from('tasks').upsert(tasks.map(toDbTask),{onConflict:'id'})
-      .then(({error})=>{if(error)console.error('save tasks:',error);});
+    syncTaskSnapshot(tasks.map(t=>clone(t)));
+}
+function mergeCloudTasks(rows){const result=rows.map(fromDbTask);for(const pending of Object.values(deliveryPending))if(!result.some(t=>t.id===pending.id))result.push(normalizeTask(clone(pending)));return result;}
+async function syncTaskSnapshot(snapshot){
+  const {error}=await sb.from('tasks').upsert(snapshot.map(toDbTask),{onConflict:'id'});
+  if(error){deliveryNotice('Work saved locally; cloud sync failed: '+error.message);return;}
+  if(deliveryCloudReady){for(const t of snapshot)if(JSON.stringify(deliveryPending[t.id])===JSON.stringify(t))delete deliveryPending[t.id];persistJSON('emr-delivery-pending',deliveryPending);}
 }
 function saveMembers(){
   localStorage.setItem(STORAGE_KEYS.members,JSON.stringify(members));
@@ -858,21 +878,26 @@ function loadLocal(){
 }
 /* -- LOAD DATA (Supabase) -- */
 async function loadData(){
+  loadLocal();
+  renderAll();
   setDbStatus('connecting','Connecting...');
   try{
     sb=supabase.createClient(SB_URL,SB_KEY);
+    await loadDeliveryCloud();
     const [tr,mr,pr]=await Promise.all([
       sb.from('tasks').select('*'),
       sb.from('members').select('*'),
       sb.from('projects').select('*'),
     ]);
     if(tr.error||mr.error||pr.error)throw tr.error||mr.error||pr.error;
-    tasks=(tr.data||[]).map(fromDbTask);
+    tasks=mergeCloudTasks(tr.data||[]);
+    persistJSON(STORAGE_KEYS.tasks,tasks);
     members=(mr.data||[]).map(fromDbMember);
     projects=(pr.data||[]).map(fromDbProject);
     if(!tasks.length&&!members.length){seedMembers();seedData();seedProjects();}
     tasks=tasks.map(normalizeTask);
     sbMode='cloud';setDbStatus('cloud','Supabase');setupRealtime();
+    if(Object.keys(deliveryPending).length)save();
   }catch(err){
     console.warn('Supabase unavailable, using local:',err);
     loadLocal();setDbStatus('local','Local');
@@ -919,12 +944,15 @@ function getFiltered(){
 let currentTab='projects';
 function switchTab(tab){
   currentTab=tab;
-  const tabNames=['projects','board','list','stats','team'];
+  const tabNames=['projects','board','list','stats','team','hierarchy','stakeholders','reviews'];
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',tabNames[i]===tab));
-  ['projects','board','list','stats','team'].forEach(v=>{document.getElementById(v+'-view').style.display=v===tab?'block':'none';});
+  tabNames.forEach(v=>{document.getElementById(v+'-view').style.display=v===tab?'block':'none';});
   const tb=document.getElementById('main-toolbar'), btn=document.getElementById('new-task-btn');
   if(tab==='projects'){tb.style.display='none';btn.textContent='+ New Project';btn.onclick=openProjectModal;}
   else if(tab==='team'){tb.style.display='none';btn.textContent='+ Add Member';btn.onclick=openMemberModal;}
+  else if(tab==='stakeholders'){tb.style.display='flex';btn.textContent='+ Stakeholder';btn.onclick=()=>openStakeholder();}
+  else if(tab==='reviews'){tb.style.display='flex';btn.textContent='+ Work Item';btn.onclick=()=>openModal();}
+  else if(tab==='hierarchy'){tb.style.display='flex';btn.textContent='+ Work Item';btn.onclick=()=>openModal();}
   else{tb.style.display='flex';btn.textContent='+ New Task';btn.onclick=()=>openModal();}
   renderAll();
 }
@@ -937,6 +965,7 @@ function renderAll(){
   populateAssigneeSelect(); populateProjectSelect(); populateOwnerSelect();
   updateActiveProjectPill();
   renderProjects(); renderBoard(); renderList(); renderStats(); renderTeam();
+  renderDeliveryViews();
 }
 
 function populateProjectFilter(){
@@ -1142,6 +1171,7 @@ function saveProject(){
 }
 function deleteProject(){
   if(!editProjectId)return;
+  if(tasks.some(t=>t.projectId===editProjectId&&t.delivery?.type!=='task')){alert('Move or remove this project\'s epics, features and stories before deleting it.');return;}
   const p=projects.find(p=>p.id===editProjectId);
   if(!confirm(`Delete project "${p?.name}"? Tasks will be unassigned from this project.`))return;
   tasks.forEach(t=>{if(t.projectId===editProjectId)t.projectId='';});
@@ -1152,6 +1182,7 @@ function deleteProject(){
 }
 function confirmDeleteProject(id){
   const p=projects.find(p=>p.id===id); if(!p)return;
+  if(tasks.some(t=>t.projectId===id&&t.delivery?.type!=='task')){alert('Move or remove this project\'s epics, features and stories before deleting it.');return;}
   if(!confirm(`Delete project "${p.name}"? Tasks will be unassigned from this project.`))return;
   tasks.forEach(t=>{if(t.projectId===id)t.projectId='';});
   save();
@@ -1167,7 +1198,7 @@ function renderBoard(){
   board.innerHTML=STATUSES.map(s=>{
     const cols=filtered.filter(t=>t.status===s);
     const sp=cols.reduce((a,t)=>a+(parseInt(t.storyPoints)||0),0);
-    return `<div class="column">
+    return `<section class="column" aria-label="${safe(STAT_LBL[s])}">
       <div class="col-header">
         <div class="col-title"><div class="col-dot dot-${s}"></div>${STAT_LBL[s]}</div>
         <div style="display:flex;align-items:center;gap:5px">
@@ -1181,7 +1212,7 @@ function renderBoard(){
         ondragleave="colDragLeave(event)">
         ${cols.length?cols.map(t=>cardHTML(t,sps)).join(''):'<div class="empty-col">Drop here</div>'}
       </div>
-    </div>`;
+    </section>`;
   }).join('');
 }
 function cardHTML(t,sps){
@@ -1190,28 +1221,26 @@ function cardHTML(t,sps){
   const blocked=isBlocked(t);
   const depCount=(t.blockedBy||[]).length;
   const blocksCount=tasks.filter(x=>(x.blockedBy||[]).includes(t.id)).length;
-  return `<div class="card${blocked?' blocked-card':''}" draggable="true"
+  return `<div class="card${blocked?' blocked-card':''}" draggable="true" role="button" tabindex="0" aria-label="${safe(t.title)}" title="${safe(t.title)}"
       ondragstart="cardDragStart(event,'${t.id}')"
       ondragend="cardDragEnd(event)"
       onclick="openModal('${t.id}')"
+      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${t.id}')}"
       style="${blocked?'border-color:#5c1a1a;':''}" >
     <div class="card-priority" style="background:${pc}"></div>
-    <div style="padding-left:6px">
-      <div class="card-module">${t.module}</div>
-      <div class="card-title">${t.title}</div>
-      ${t.desc?`<div class="card-desc">${t.desc}</div>`:''}
+    <div>
+      <div class="card-heading"><span class="card-type">${safe(WORK_LABELS[t.delivery?.type]||'Task')}</span><span class="card-key" title="${safe(t.module)}">${safe(t.id.slice(-7).toUpperCase())}</span></div>
+      <div class="card-title">${safe(t.title)}</div>
       <div class="card-meta">
+        ${t.delivery?.reviewStatus==='pending'?'<span class="delivery-chip">Needs review</span>':''}
         <span class="tag prio-${t.priority.toLowerCase()}">${t.priority}</span>
         ${t.storyPoints?`<span class="sp-badge">${t.storyPoints}sp</span>`:''}
         ${blocked?`<span class="blocked-badge">🚫 Blocked</span>`:''}
-        ${!blocked&&depCount?`<span class="dep-badge">🔗 ${depCount} dep</span>`:''}
-        ${blocksCount?`<span class="dep-badge" style="background:#1a2a1a;color:#86efac;border-color:#2a4a2a">⬆ blocks ${blocksCount}</span>`:''}
-        ${sp?`<span style="font-size:.68rem;color:var(--muted);background:var(--surface2);padding:1px 6px;border-radius:8px">${sp.label}</span>`:''}
-        ${t.comments?.length?`<span style="font-size:.72rem;color:var(--muted)">💬 ${t.comments.length}</span>`:''}
-        <span style="margin-left:auto;display:flex;align-items:center;gap:4px">${avi(t.assignee||'',18)}<span style="font-size:.7rem;color:var(--muted)">${t.assignee||'Unassigned'}</span></span>
+        ${!blocked&&depCount?`<span class="dep-badge">${depCount} dep</span>`:''}
+        ${blocksCount?`<span class="dep-badge">Blocks ${blocksCount}</span>`:''}
+        ${t.comments?.length?`<span class="card-key" title="Comments">${t.comments.length} comments</span>`:''}
       </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${t.progress||0}%"></div></div>
-      <div class="card-footer"><span class="card-due">${t.due?'📅 '+t.due:''}</span><span style="font-size:.72rem;color:var(--muted)">${t.progress||0}%</span></div>
+      <div class="card-footer"><span class="card-due" title="${sp?safe(sp.label):'No sprint'}">${safe(t.due||sp?.label||'No due date')}</span><span class="card-owner" title="${safe(t.assignee||'Unassigned')}">${avi(t.assignee||'',20)}<span class="card-owner-name">${safe(t.assignee||'Unassigned')}</span></span></div>
     </div>
   </div>`;
 }
@@ -1223,7 +1252,7 @@ function renderList(){
   body.innerHTML=filtered.map(t=>{
     const sp=sps.find(s=>s.id===t.sprintId);
     return `<tr onclick="openModal('${t.id}')">
-      <td><strong>${t.title}</strong></td>
+      <td><strong>${safe(t.title)}</strong></td>
       <td style="color:var(--muted)">${t.module}</td>
       <td><span class="tag status-${t.status}">${STAT_LBL[t.status]}</span></td>
       <td><span class="tag prio-${t.priority.toLowerCase()}">${t.priority}</span></td>
@@ -1457,7 +1486,7 @@ function confirmDeleteMember(id){
 /* ── TASK MODAL ── */
 let commentBuffer=[];
 function openModal(id){
-  editId=id||null;commentBuffer=[];
+  editId=id||null;commentBuffer=[];depBuffer=[];
   const t=id?tasks.find(t=>t.id===id):null;
   document.getElementById('modal-title-text').textContent=t?'✏️ Edit Task':'➕ New Task';
   document.getElementById('f-title').value   =t?.title||'';
@@ -1489,11 +1518,15 @@ function openModal(id){
   depSec.style.display=t?'block':'none';
   if(t){ depBuffer=[...(t.blockedBy||[])]; renderDepList(); populateDepSelect(); }
   document.getElementById('task-overlay').classList.add('open');
+  fillDeliveryForm(t);
 }
 function closeModal(){document.getElementById('task-overlay').classList.remove('open');editId=null;}
 function saveTask(){
   const title=document.getElementById('f-title').value.trim();
   if(!title){alert('Task title is required.');return;}
+  const before=tasks.find(t=>t.id===editId);
+  const delivery=readDeliveryForm(before);
+  if(!delivery)return false;
   const data={
     id:editId||uid(),title,
     desc:    document.getElementById('f-desc').value.trim(),
@@ -1509,13 +1542,25 @@ function saveTask(){
     projectId:  document.getElementById('f-project').value||'',
     blockedBy:  depBuffer,
     comments:commentBuffer,
+    delivery,
   };
+  const issue=validateWorkItem(data);
+  if(issue){alert(issue);return false;}
+  if(data.status==='done')data.progress=100;
+  markDeliveryPending(data);
   if(editId){const i=tasks.findIndex(t=>t.id===editId);if(i>-1)tasks[i]=data;}else tasks.push(data);
-  save();closeModal();renderAll();
+  recordEvent('task',data.id,before?'updated':'created',before,data);
+  save();closeModal();renderAll();return data;
 }
 function deleteTask(){
   if(!editId)return;
   if(!confirm('Delete this task? This cannot be undone.'))return;
+  if(tasks.some(t=>t.delivery?.parentId===editId)){alert('Move or delete child work items first.');return;}
+  const removed=tasks.find(t=>t.id===editId);
+  delete deliveryPending[editId];persistJSON('emr-delivery-pending',deliveryPending);
+  tasks.forEach(t=>{t.blockedBy=(t.blockedBy||[]).filter(id=>id!==editId);});
+  if(sbMode==='cloud')sb.from('tasks').delete().eq('id',editId).then(({error})=>{if(error)deliveryNotice('Delete not synced: '+error.message);});
+  recordEvent('task',editId,'deleted',removed,null);
   tasks=tasks.filter(t=>t.id!==editId);save();closeModal();renderAll();
 }
 function addComment(){
@@ -1568,8 +1613,11 @@ function colDrop(e,status){
   const id=e.dataTransfer.getData('text/plain')||dragTaskId;
   const t=tasks.find(t=>t.id===id);
   if(t&&t.status!==status){
+    const issue=validateWorkItem({...t,status});
+    if(issue){alert(issue);return;}
     t.status=status;
     if(status==='done') t.progress=100;
+    markDeliveryPending(t);
     save(); renderAll();
     // Flash confirmation
     setTimeout(()=>{
@@ -1811,6 +1859,164 @@ function renderBurndown(){
   </div>`;
 }
 
+/* Delivery workspace. Metadata stays cached until the cloud migration is available. */
+let stakeholders=loadJSON('emr-stakeholders',[]);
+let deliveryCloudReady=false;
+let deliveryPending=loadJSON('emr-delivery-pending',{});
+let stakeholderEditId=null;
+const WORK_TYPES=['epic','feature','story','task'];
+const WORK_LABELS={epic:'Epic',feature:'Feature',story:'User Story',task:'Task'};
+function defaultDelivery(){return {type:'task',parentId:'',reviewer:'',agentOwner:'',agentStatus:'not_requested',objective:'',criteria:'',files:'',constraints:'',commands:'',repoUrl:'',branch:'',commit:'',prUrl:'',evidence:[],reviewStatus:'draft',reviewKind:'implementation',reviewQuestion:'',reviewNotes:'',submittedAt:null,approval:null};}
+function markDeliveryPending(t){deliveryPending[t.id]=clone(t);persistJSON('emr-delivery-pending',deliveryPending);}
+function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function deliveryNotice(message){const el=document.getElementById('delivery-sync');el.textContent=message;el.style.display=message?'block':'none';}
+function deliveryField(label,id,kind='textarea',extra=''){
+  return `<div class="form-group"><label for="${id}">${label}</label>${kind==='textarea'?`<textarea id="${id}" ${extra}></textarea>`:`<input id="${id}" type="${kind}" ${extra}>`}</div>`;
+}
+function installDeliveryUI(){
+  const css=document.createElement('style');
+  css.textContent=`.tabs{overflow-x:auto}.tab{white-space:nowrap}.delivery-view{display:none;padding:20px 24px 36px}.delivery-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}.delivery-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.delivery-row h2,.delivery-row h3{flex:1}.work-tree{list-style:none;padding-left:18px;border-left:1px solid var(--border)}.work-tree>li{padding:8px 0}.work-tree button{max-width:100%;text-align:left;overflow-wrap:anywhere}.delivery-muted{font-size:.8rem;color:var(--muted);line-height:1.6}.delivery-chip{display:inline-block;background:var(--surface2);border-radius:6px;padding:3px 7px;font-size:.72rem}.delivery-actions{display:flex;gap:8px;flex-wrap:wrap}.delivery-check{display:block;padding:6px 0;font-size:.85rem}.delivery-check input{margin-right:8px}.delivery-details{border-top:1px solid var(--border);padding-top:14px}.delivery-details summary{cursor:pointer;font-weight:600;margin-bottom:12px}.delivery-form{display:flex;flex-direction:column;gap:14px}.delivery-review{border-left:3px solid var(--yellow)}.delivery-view a{color:var(--accent)}@media(max-width:700px){.delivery-view{padding:14px}.work-tree{padding-left:10px}.modal-footer{flex-wrap:wrap}}`;
+  document.head.appendChild(css);
+  const section=document.createElement('section');section.className='delivery-form';section.id='delivery-fields';
+  section.innerHTML=`<details class="delivery-details" open><summary>Work structure and ownership</summary><div class="delivery-form">
+    <div class="form-row"><div class="form-group"><label for="d-type">Work item type</label><select id="d-type" onchange="refreshParentOptions()">${WORK_TYPES.map(t=>`<option value="${t}">${WORK_LABELS[t]}</option>`).join('')}</select></div><div class="form-group"><label for="d-parent">Parent work item</label><select id="d-parent"></select></div></div>
+    <div class="form-row"><div class="form-group"><label for="d-reviewer">Human reviewer</label><select id="d-reviewer"></select></div>${deliveryField('Executing agent','d-agent','text','placeholder="Agent or session name"')}</div>
+    <div class="form-group"><label for="d-agent-status">Agent execution status</label><select id="d-agent-status"><option value="not_requested">Not requested</option><option value="queued">Queued</option><option value="running">Running</option><option value="needs_human">Needs human</option><option value="completed">Completed</option><option value="failed">Failed</option></select></div>
+    <p class="delivery-muted">Assignee above is the accountable human owner. Agent status is recorded manually; this board does not launch agents.</p></div></details>
+    <details class="delivery-details"><summary>Agent brief</summary><div class="delivery-form">${deliveryField('Objective','d-objective')}${deliveryField('Acceptance criteria','d-criteria','textarea','placeholder="One verifiable criterion per line"')}${deliveryField('Relevant files','d-files')}${deliveryField('Constraints and context','d-constraints')}${deliveryField('Verification commands','d-commands')}<button type="button" class="btn btn-secondary" onclick="copyAgentBrief()">Copy Agent Brief</button><textarea id="d-brief-output" readonly aria-label="Generated agent brief" style="display:none"></textarea></div></details>
+    <details class="delivery-details"><summary>GitHub and completion evidence</summary><div class="delivery-form">${deliveryField('Repository URL','d-repo','url')}${deliveryField('Branch','d-branch','text')}${deliveryField('Commit SHA','d-commit','text')}${deliveryField('Pull request URL','d-pr','url')}<p class="delivery-muted">Links are recorded manually; CI status is not automatically verified.</p><div id="d-evidence-list"></div><div class="form-row"><div class="form-group"><label for="d-evidence-type">Evidence type</label><select id="d-evidence-type"><option value="test">Test result</option><option value="screenshot">Screenshot link</option><option value="pr">Pull request</option><option value="note">Verification note</option></select></div>${deliveryField('Evidence description','d-evidence-text','text')}</div>${deliveryField('Evidence URL (optional)','d-evidence-url','url')}<button type="button" class="btn btn-secondary" onclick="addEvidence()">Add Evidence</button></div></details>
+    <details class="delivery-details" open><summary>Human review</summary><div class="delivery-form"><div id="d-review-summary" class="delivery-muted"></div><div class="form-group"><label for="d-review-kind">Request type</label><select id="d-review-kind"><option value="implementation">Completed implementation</option><option value="plan">Proposed plan</option><option value="question">Question or decision</option></select></div>${deliveryField('Question or review context','d-question')}<button type="button" class="btn btn-secondary" onclick="submitWorkReview()">Save and Request Review</button></div></details>`;
+  document.querySelector('#task-overlay .modal-body').appendChild(section);
+  const links=document.createElement('p');links.id='d-github-links';links.className='delivery-muted';section.appendChild(links);
+  document.getElementById('f-project').addEventListener('change',()=>refreshParentOptions());
+  const modal=document.createElement('div');modal.id='stakeholder-overlay';modal.className='overlay';modal.onclick=closeOnOverlay;
+  modal.innerHTML=`<div class="modal"><div class="modal-header"><h2 id="stakeholder-title" class="modal-title">Stakeholder</h2><button class="modal-close" onclick="closeStakeholder()">Close</button></div><div class="modal-body">${deliveryField('Name *','s-name','text')}${deliveryField('Role / involvement','s-role','text')}${deliveryField('Email','s-email','email')}${deliveryField('Organization','s-org','text')}${deliveryField('Notes','s-notes')}<fieldset style="border:1px solid var(--border);padding:12px"><legend>Projects (select one or more)</legend><div id="s-projects"></div></fieldset></div><div class="modal-footer"><button class="btn btn-danger" id="s-delete" onclick="deleteStakeholder()">Remove</button><button class="btn btn-primary" onclick="saveStakeholder()">Save Stakeholder</button></div></div>`;
+  document.body.appendChild(modal);
+}
+let evidenceBuffer=[];
+function fillDeliveryForm(task){
+  const d={...defaultDelivery(),...(task?.delivery||{})};
+  evidenceBuffer=clone(d.evidence||[]);
+  const fields={type:'type',agent:'agentOwner','agent-status':'agentStatus',objective:'objective',criteria:'criteria',files:'files',constraints:'constraints',commands:'commands',repo:'repoUrl',branch:'branch',commit:'commit',pr:'prUrl','review-kind':'reviewKind',question:'reviewQuestion'};
+  for(const [id,key] of Object.entries(fields))document.getElementById('d-'+id).value=d[key]||'';
+  const reviewer=document.getElementById('d-reviewer');
+  reviewer.innerHTML='<option value="">Choose reviewer</option>'+members.map(m=>`<option value="${safe(m.id)}">${safe(m.name)}</option>`).join('');reviewer.value=d.reviewer;
+  refreshParentOptions(d.parentId);
+  document.getElementById('d-review-summary').textContent=`Review: ${d.reviewStatus}${d.approval?' | Signed off by '+d.approval.name:''}${d.reviewNotes?' | '+d.reviewNotes:''}`;
+  document.getElementById('d-github-links').innerHTML=[['Repository',d.repoUrl],['Pull Request',d.prUrl]].filter(([,url])=>url&&httpUrl(url)).map(([label,url])=>`<a href="${safe(url)}" target="_blank" rel="noopener noreferrer">Open ${label}</a>`).join(' | ');
+  document.getElementById('d-brief-output').style.display='none';
+  ['d-evidence-text','d-evidence-url'].forEach(id=>document.getElementById(id).value='');
+  renderEvidence();
+}
+function refreshParentOptions(selected){
+  const type=document.getElementById('d-type').value;
+  const project=document.getElementById('f-project').value;
+  const el=document.getElementById('d-parent');const cur=selected===undefined?el.value:selected;
+  const parentType=WORK_TYPES[WORK_TYPES.indexOf(type)-1];
+  el.innerHTML='<option value="">'+(type==='epic'?'Project level':'Unparented '+WORK_LABELS[type])+'</option>'+tasks.filter(t=>t.id!==editId&&t.projectId===project&&t.delivery?.type===parentType).map(t=>`<option value="${safe(t.id)}">${safe(t.title)}</option>`).join('');el.value=cur;el.disabled=type==='epic';
+}
+function httpUrl(value){if(!value)return true;try{return ['http:','https:'].includes(new URL(value).protocol);}catch{return false;}}
+function readDeliveryForm(before){
+  const d={...defaultDelivery(),...(before?.delivery||{})};
+  const fields={type:'type',parent:'parentId',reviewer:'reviewer',agent:'agentOwner','agent-status':'agentStatus',objective:'objective',criteria:'criteria',files:'files',constraints:'constraints',commands:'commands',repo:'repoUrl',branch:'branch',commit:'commit',pr:'prUrl','review-kind':'reviewKind',question:'reviewQuestion'};
+  for(const [id,key] of Object.entries(fields))d[key]=document.getElementById('d-'+id).value.trim();
+  if(!httpUrl(d.repoUrl)||!httpUrl(d.prUrl)){alert('Repository and PR links must be valid HTTP or HTTPS URLs.');return null;}
+  d.evidence=clone(evidenceBuffer);
+  // Any changed delivery brief or task content invalidates an earlier sign-off.
+  if(before){
+    const tracked=['type','parentId','reviewer','agentOwner','objective','criteria','files','constraints','commands','repoUrl','branch','commit','prUrl','evidence','reviewKind','reviewQuestion'];
+    const changed=tracked.some(k=>JSON.stringify(d[k])!==JSON.stringify(before.delivery?.[k]??defaultDelivery()[k]))||document.getElementById('f-title').value.trim()!==before.title||document.getElementById('f-desc').value.trim()!==(before.desc||'')||document.getElementById('f-notes').value.trim()!==(before.notes||'')||document.getElementById('f-project').value!==(before.projectId||'')||document.getElementById('f-assignee').value!==(before.assignee||'');
+    if(changed||JSON.stringify(depBuffer)!==JSON.stringify(before.blockedBy||[])){d.approval=null;d.reviewStatus='draft';d.submittedAt=null;d.reviewNotes='';}
+  }
+  return d;
+}
+function validateWorkItem(t){
+  const d=t.delivery||defaultDelivery();
+  if(!WORK_TYPES.includes(d.type))return 'Choose a valid work item type.';
+  if(d.type!=='task'&&!t.projectId)return 'Epics, features and stories require a project.';
+  if(d.parentId){const p=tasks.find(x=>x.id===d.parentId);if(!p||p.id===t.id||p.projectId!==t.projectId||WORK_TYPES.indexOf(p.delivery?.type)!==WORK_TYPES.indexOf(d.type)-1)return 'Parent must be the preceding work level in the same project.';}
+  const children=tasks.filter(x=>x.delivery?.parentId===t.id);
+  if(children.some(c=>c.projectId!==t.projectId||WORK_TYPES.indexOf(c.delivery.type)!==WORK_TYPES.indexOf(d.type)+1))return 'Move child work items before changing this item\'s project or type.';
+  if(t.status==='done'){
+    if(children.some(c=>c.status!=='done'))return 'Complete child work items before closing their parent.';
+    if(isBlocked(t))return 'Resolve blockers before marking this item done.';
+    if(!d.criteria.trim()||!d.evidence.length||d.reviewStatus!=='approved'||!d.approval)return 'Done requires acceptance criteria, completion evidence, and reviewer approval.';
+  }
+  return '';
+}
+function addEvidence(){
+  const text=document.getElementById('d-evidence-text').value.trim(),url=document.getElementById('d-evidence-url').value.trim(),type=document.getElementById('d-evidence-type').value;
+  if(!text){alert('Describe what the evidence demonstrates.');return;}
+  if(!httpUrl(url)||(['screenshot','pr'].includes(type)&&!url)){alert('Provide a valid HTTP or HTTPS evidence link.');return;}
+  evidenceBuffer.push({id:uid(),type,text,url,createdAt:isoNow(),author:currentUser});renderEvidence();
+  document.getElementById('d-evidence-text').value='';document.getElementById('d-evidence-url').value='';
+}
+function removeEvidence(id){evidenceBuffer=evidenceBuffer.filter(e=>e.id!==id);renderEvidence();}
+function renderEvidence(){document.getElementById('d-evidence-list').innerHTML=evidenceBuffer.map(e=>`<div class="delivery-panel"><span class="delivery-chip">${safe(e.type)}</span> ${safe(e.text)} ${e.url&&httpUrl(e.url)?`<a href="${safe(e.url)}" target="_blank" rel="noopener noreferrer">View</a>`:''} <button type="button" class="btn btn-secondary btn-sm" data-remove-evidence="${safe(e.id)}">Remove</button></div>`).join('')||'<p class="delivery-muted">No completion evidence recorded.</p>';document.querySelectorAll('[data-remove-evidence]').forEach(b=>b.onclick=()=>removeEvidence(b.dataset.removeEvidence));}
+function buildAgentBrief(t){
+  const d=t.delivery,p=projects.find(p=>p.id===t.projectId),parent=tasks.find(x=>x.id===d.parentId);
+  return `# ${WORK_LABELS[d.type]}: ${t.title}\nProject: ${p?.name||'Unassigned'}\nParent: ${parent?.title||'None'}\nHuman owner: ${t.assignee||'Unassigned'}\nExecuting agent: ${d.agentOwner||'Unassigned'}\nReviewer: ${members.find(m=>m.id===d.reviewer)?.name||'Unassigned'}\n\n## Objective\n${d.objective||t.desc||'Not specified'}\n\n## Acceptance criteria\n${d.criteria||'Not specified'}\n\n## Relevant files\n${d.files||'Not specified'}\n\n## Constraints and context\n${d.constraints||t.notes||'Not specified'}\n\n## Dependencies\n${(t.blockedBy||[]).map(id=>tasks.find(x=>x.id===id)?.title||'Missing blocker').join('\n')||'None'}\n\n## Verification commands\n${d.commands||'Not specified'}\n\n## GitHub\nRepository: ${d.repoUrl||'None'}\nBranch: ${d.branch||'None'}\nCommit: ${d.commit||'None'}\nPR: ${d.prUrl||'None'}\n\nReturn a summary, changed files, verification results, and remaining risks for human review.`;
+}
+async function copyAgentBrief(){const before=tasks.find(t=>t.id===editId),d=readDeliveryForm(before);if(!d)return;const text=buildAgentBrief({title:document.getElementById('f-title').value,desc:document.getElementById('f-desc').value,notes:document.getElementById('f-notes').value,assignee:document.getElementById('f-assignee').value,projectId:document.getElementById('f-project').value,blockedBy:depBuffer,delivery:d});const out=document.getElementById('d-brief-output');out.value=text;out.style.display='block';try{await navigator.clipboard.writeText(text);}catch{out.focus();out.select();}}
+function submitWorkReview(){
+  if(!document.getElementById('d-reviewer').value){alert('Choose a human reviewer first.');return;}
+  const kind=document.getElementById('d-review-kind').value;
+  if(kind==='implementation'&&(!document.getElementById('d-criteria').value.trim()||!evidenceBuffer.length)){alert('Implementation review requires acceptance criteria and completion evidence.');return;}
+  if(kind!=='implementation'&&!document.getElementById('d-question').value.trim()){alert('Describe the plan, question, or decision for the reviewer.');return;}
+  if(kind==='implementation'||document.getElementById('f-status').value==='done')document.getElementById('f-status').value='testing';
+  const t=saveTask();if(!t)return;
+  t.delivery.reviewStatus='pending';t.delivery.submittedAt=isoNow();t.delivery.approval=null;
+  markDeliveryPending(t);
+  recordEvent('task',t.id,'review_requested',null,t);save();switchTab('reviews');
+}
+function decideReview(id,decision,notes){
+  const t=tasks.find(t=>t.id===id);if(!t||t.delivery.reviewStatus!=='pending')return;
+  const reviewer=members.find(m=>m.id===t.delivery.reviewer);
+  if(!reviewer||currentUser!==reviewer.name){alert('Switch Developer to the assigned reviewer ('+(reviewer?.name||'missing reviewer')+') to record a decision.');return;}
+  if(!notes.trim()){alert('Add a review decision note.');return;}
+  if(decision==='approved'&&t.delivery.reviewKind==='implementation'&&(!t.delivery.evidence.length||!t.delivery.criteria.trim())){alert('Acceptance criteria and evidence are required.');return;}
+  t.delivery.reviewStatus=decision==='approved'&&t.delivery.reviewKind!=='implementation'?'answered':decision;t.delivery.reviewNotes=notes.trim();
+  t.delivery.approval=decision==='approved'&&t.delivery.reviewKind==='implementation'?{memberId:reviewer.id,name:reviewer.name,at:isoNow(),notes:notes.trim()}:null;
+  markDeliveryPending(t);
+  recordEvent('task',t.id,'review_'+t.delivery.reviewStatus,null,t);save();renderAll();
+}
+function rollup(t,seen=new Set()){
+  if(seen.has(t.id))return {done:0,total:0};seen.add(t.id);
+  const kids=tasks.filter(x=>x.delivery?.parentId===t.id);
+  if(!kids.length)return {done:t.status==='done'?1:0,total:1};
+  return kids.map(k=>rollup(k,seen)).reduce((a,b)=>({done:a.done+b.done,total:a.total+b.total}),{done:0,total:0});
+}
+function renderDeliveryViews(){
+  const filtered=getFiltered(),visible=new Set(filtered.map(t=>t.id));
+  // Include ancestor context when a leaf matches the board filters.
+  filtered.forEach(t=>{let p=t.delivery?.parentId;const seen=new Set();while(p&&!seen.has(p)){seen.add(p);visible.add(p);p=tasks.find(x=>x.id===p)?.delivery?.parentId;}});
+  function tree(items,seen=new Set()) {return `<ul class="work-tree">${items.filter(t=>visible.has(t.id)&&!seen.has(t.id)).map(t=>{const next=new Set(seen);next.add(t.id);const r=rollup(t);return `<li><div class="delivery-row"><span class="delivery-chip">${WORK_LABELS[t.delivery?.type]||'Task'}</span><button class="btn btn-secondary btn-sm" data-open-work="${safe(t.id)}">${safe(t.title)}</button><span class="delivery-muted">${safe(STAT_LBL[t.status])} | ${r.done}/${r.total} leaf items done (${Math.round(r.done/r.total*100)}%)</span></div>${tree(tasks.filter(x=>x.delivery?.parentId===t.id),next)}</li>`;}).join('')}</ul>`;}
+  document.getElementById('hierarchy-view').innerHTML=`<div class="delivery-row"><h2>Project Work Hierarchy</h2><button class="btn btn-primary" onclick="openModal()">Add Work Item</button></div><p class="delivery-muted">Project / Epic / Feature / User Story / Task. Existing tasks remain unparented until organized. Progress counts completed leaf items.</p>`+projects.filter(p=>!activeProjectId||p.id===activeProjectId).map(p=>`<section class="delivery-panel"><h3>${safe(p.name)}</h3><p class="delivery-muted">Stakeholders: ${safe(stakeholders.filter(s=>s.projectIds.includes(p.id)).map(s=>s.name).join(', ')||'None assigned')}</p>${tree(tasks.filter(t=>t.projectId===p.id&&!t.delivery?.parentId))}</section>`).join('')+(!activeProjectId?`<section class="delivery-panel"><h3>No Project</h3>${tree(tasks.filter(t=>!t.projectId&&!t.delivery?.parentId))}</section>`:'');
+  const pending=filtered.filter(t=>t.delivery?.reviewStatus==='pending');document.getElementById('review-count').textContent=pending.length?`(${pending.length})`:'';
+  document.getElementById('reviews-view').innerHTML=`<h2 style="margin-bottom:14px">Human Review Inbox</h2><p class="delivery-muted">Review decisions use the local developer name. This is team coordination, not authenticated identity verification.</p>`+(pending.map(t=>{const d=t.delivery;return `<article class="delivery-panel delivery-review"><div class="delivery-row"><h3>${safe(t.title)}</h3><span class="delivery-chip">${safe(d.reviewKind)}</span></div><p class="delivery-muted">Owner: ${safe(t.assignee||'Unassigned')} | Agent: ${safe(d.agentOwner||'Unassigned')} | Reviewer: ${safe(members.find(m=>m.id===d.reviewer)?.name||'Missing reviewer')}</p><p style="white-space:pre-wrap;margin:12px 0">${safe(d.reviewQuestion||d.objective||t.desc||'')}</p><p style="white-space:pre-wrap">${safe(d.criteria)}</p><p class="delivery-muted">${d.evidence.length} evidence item(s). Open the work item to inspect evidence and links.</p><div class="form-group"><label for="review-note-${safe(t.id)}">Decision note</label><textarea id="review-note-${safe(t.id)}"></textarea></div><div class="delivery-actions" style="margin-top:10px"><button class="btn btn-secondary" data-open-work="${safe(t.id)}">Inspect Work Item</button><button class="btn btn-primary" data-review-id="${safe(t.id)}" data-decision="approved">${d.reviewKind==='implementation'?'Approve Implementation':'Accept / Answer'}</button><button class="btn btn-secondary" data-review-id="${safe(t.id)}" data-decision="changes_requested">Request Changes</button></div></article>`;}).join('')||'<div class="delivery-panel">No review requests match the current filters.</div>');
+  renderStakeholders();
+  document.querySelectorAll('[data-open-work]').forEach(b=>b.onclick=()=>openModal(b.dataset.openWork));
+  document.querySelectorAll('[data-review-id]').forEach(b=>b.onclick=()=>decideReview(b.dataset.reviewId,b.dataset.decision,document.getElementById('review-note-'+b.dataset.reviewId).value));
+}
+function renderStakeholders(){
+  document.getElementById('stakeholders-view').innerHTML=`<div class="delivery-row"><h2>Project Stakeholders</h2><button class="btn btn-primary" onclick="openStakeholder()">Add Stakeholder</button></div>`+(stakeholders.filter(s=>!s.deleted&&(!activeProjectId||s.projectIds.includes(activeProjectId))).map(s=>`<article class="delivery-panel"><div class="delivery-row"><h3>${safe(s.name)}</h3><button class="btn btn-secondary btn-sm" data-stakeholder="${safe(s.id)}">Edit</button></div><p>${safe(s.role)}${s.organization?' | '+safe(s.organization):''}</p><p class="delivery-muted">${safe(s.email)}</p><p class="delivery-muted">${safe(s.projectIds.map(id=>projects.find(p=>p.id===id)?.name||'Removed project').join(', '))}</p><p style="white-space:pre-wrap">${safe(s.notes)}</p></article>`).join('')||'<div class="delivery-panel">No stakeholders assigned. Add a person and select their projects.</div>');
+  document.querySelectorAll('[data-stakeholder]').forEach(b=>b.onclick=()=>openStakeholder(b.dataset.stakeholder));
+}
+function openStakeholder(id){stakeholderEditId=id||null;const s=stakeholders.find(s=>s.id===id);for(const [field,key] of Object.entries({name:'name',role:'role',email:'email',org:'organization',notes:'notes'}))document.getElementById('s-'+field).value=s?.[key]||'';document.getElementById('s-projects').innerHTML=projects.map(p=>`<label class="delivery-check"><input type="checkbox" value="${safe(p.id)}"${(s?.projectIds||[activeProjectId]).includes(p.id)?' checked':''}>${safe(p.name)}</label>`).join('');document.getElementById('s-delete').style.display=s?'block':'none';document.getElementById('stakeholder-overlay').classList.add('open');}
+function closeStakeholder(){document.getElementById('stakeholder-overlay').classList.remove('open');}
+function saveStakeholder(){const name=document.getElementById('s-name').value.trim(),email=document.getElementById('s-email');const projectIds=[...document.querySelectorAll('#s-projects input:checked')].map(c=>c.value);if(!name||!projectIds.length){alert('Name and at least one project are required.');return;}if(!email.checkValidity()){email.reportValidity();return;}const before=stakeholders.find(s=>s.id===stakeholderEditId);const s={id:stakeholderEditId||uid(),name,email:email.value.trim(),role:document.getElementById('s-role').value.trim(),organization:document.getElementById('s-org').value.trim(),notes:document.getElementById('s-notes').value.trim(),projectIds,updatedAt:isoNow(),deleted:false};stakeholders=stakeholders.filter(x=>x.id!==s.id);stakeholders.push(s);persistJSON('emr-stakeholders',stakeholders);recordEvent('stakeholder',s.id,before?'updated':'created',before,s);syncStakeholder(s);closeStakeholder();renderAll();}
+function deleteStakeholder(){const s=stakeholders.find(s=>s.id===stakeholderEditId);if(!s||!confirm('Remove this stakeholder from all projects?'))return;const before=clone(s);s.deleted=true;s.projectIds=[];s.updatedAt=isoNow();persistJSON('emr-stakeholders',stakeholders);syncStakeholder(s);recordEvent('stakeholder',s.id,'deleted',before,null);closeStakeholder();renderAll();}
+async function syncStakeholder(s){if(!deliveryCloudReady){deliveryNotice('New feature changes are saved on this device. Apply delivery_features.sql to enable shared sync.');return;}const {error}=await sb.from('pm_stakeholders').upsert({id:s.id,profile:s,updated_at:s.updatedAt});if(error)deliveryNotice('Stakeholder saved locally; cloud sync failed: '+error.message);}
+async function loadDeliveryCloud(){
+  const [probe,result]=await Promise.all([sb.from('tasks').select('delivery').limit(1),sb.from('pm_stakeholders').select('*')]);
+  if(probe.error||result.error){deliveryCloudReady=false;deliveryNotice('New features are available locally. Apply delivery_features.sql to enable shared sync.');return;}
+  deliveryCloudReady=true;
+  const byId=new Map((result.data||[]).map(r=>[r.id,r.profile]));
+  for(const local of stakeholders){const remote=byId.get(local.id);if(!remote||local.updatedAt>remote.updatedAt){byId.set(local.id,local);await syncStakeholder(local);}}
+  stakeholders=[...byId.values()];persistJSON('emr-stakeholders',stakeholders);
+  deliveryNotice('');
+}
+installDeliveryUI();
 document.getElementById('current-user').textContent='Dev: '+currentUser;
 if(typeof supabase !== 'undefined'){
   loadData();

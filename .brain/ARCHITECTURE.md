@@ -1,5 +1,16 @@
 # ARCHITECTURE - HealthForceHub PM
 
+## Delivery Release (2026-11-09)
+The current app syncs core tasks, projects and members with the deployed text-ID compatibility schema. For this release, execution context is stored in `tasks.delivery` JSONB, rather than the earlier UUID `task_briefs` proposal. Stakeholders are independent profiles with multiple project IDs in `pm_stakeholders.profile`. This keeps the existing live data model intact.
+
+The hierarchy enforces adjacent work levels and a shared project. Existing tasks remain unparented. Parent progress counts done leaf items. Parent project/type changes and deletion are blocked while incompatible children exist. An additive database trigger also validates parent relationships after migration.
+
+Completion requires acceptance criteria, evidence, resolved blockers, completed children and implementation approval. Plans/questions can be answered without approving implementation. Editing reviewed content invalidates the sign-off. Reviewer identity is the selected local developer name, not authenticated identity.
+
+New cache keys: `emr-stakeholders` and `emr-delivery-pending`. The pending task snapshots preserve unsynced delivery metadata across cloud refreshes and are cleared only after successful migrated writes. Stakeholder tombstones retain deletion state for synchronization. The app probes both the metadata column and stakeholder table before using the new cloud features; a visible notice explains local-only operation when migration is missing.
+
+Verification: `node tests/delivery-workflows.cjs`; `tests/delivery-dom.cjs` additionally uses a temporary `linkedom` installation via `NODE_PATH`. The latter exercises actual inline startup and forms with cloud disabled. No live database migration or production deployment was performed in this release session.
+
 ## Stack Decision: Single HTML File
 Decision:
 The operational UI stays in one `healthforcehub-pm.html` file with inline CSS and inline JavaScript.
