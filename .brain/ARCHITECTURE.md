@@ -9,7 +9,7 @@ Completion requires acceptance criteria, evidence, resolved blockers, completed 
 
 New cache keys: `emr-stakeholders` and `emr-delivery-pending`. The pending task snapshots preserve unsynced delivery metadata across cloud refreshes and are cleared only after successful migrated writes. Stakeholder tombstones retain deletion state for synchronization. The app probes both the metadata column and stakeholder table before using the new cloud features; a visible notice explains local-only operation when migration is missing.
 
-Verification: `node tests/delivery-workflows.cjs`; `tests/delivery-dom.cjs` additionally uses a temporary `linkedom` installation via `NODE_PATH`. The latter exercises actual inline startup and forms with cloud disabled. No live database migration or production deployment was performed in this release session.
+Verification: `node tests/delivery-workflows.cjs`; `tests/delivery-dom.cjs` additionally uses a temporary `linkedom` installation via `NODE_PATH`. The latter exercises actual inline startup and forms with cloud disabled. Production is deployed at https://agentic-pm-tool.vercel.app. On 2026-11-13 the migration was applied in the Supabase SQL Editor, after parenthesizing a CASE expression in hierarchy validation. Public API probes returned HTTP 200 for both new resources. An anonymous-role transaction verified task metadata and stakeholder insert/update/read, then rolled back; the live UI showed Supabase connected without a migration warning.
 
 ## Stack Decision: Single HTML File
 Decision:

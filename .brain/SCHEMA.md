@@ -10,7 +10,7 @@ The deployed browser model uses text IDs (`migration_compat.sql`). The UUID desi
 - Stakeholder RLS follows the existing anonymous internal board model: select, insert and update for browser roles. No browser delete grant is needed for tombstones.
 - Hierarchy trigger validates adjacent parent type, project consistency and compatible child relationships. Indexes support parent and review-status lookup.
 
-The SQL has not been applied to the live database in this session. Completion sign-off is a browser workflow rule, not a database-enforced or authenticated approval mechanism. No agent execution service or GitHub status integration is included.
+The SQL was applied to the live AgenticPM database on 2026-11-13. Both new resources are readable through the public API, and anonymous-role insert/update/read checks passed in a rollback-only transaction. Completion sign-off remains a browser workflow rule, not a database-enforced or authenticated approval mechanism. No agent execution service or GitHub status integration is included.
 
 Full DDL: see [schema.sql](../schema.sql). Run in Supabase Dashboard > SQL Editor.
 

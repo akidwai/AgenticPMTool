@@ -60,8 +60,8 @@ begin
   end if;
   for child_row in select * from public.tasks where delivery->>'parentId' = new.id loop
     if child_row.project_id is distinct from new.project_id
-       or kind is distinct from case child_row.delivery->>'type'
-         when 'feature' then 'epic' when 'story' then 'feature' when 'task' then 'story' end then
+       or kind is distinct from (case child_row.delivery->>'type'
+         when 'feature' then 'epic' when 'story' then 'feature' when 'task' then 'story' end) then
       raise exception 'Move children before changing parent type or project';
     end if;
   end loop;
